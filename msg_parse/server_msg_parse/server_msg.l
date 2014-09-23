@@ -138,7 +138,7 @@ sig_empty_data [ ]
 
 %%
 
-int server_sig_msg_parse(const char* msg, const int msg_length)
+int server_msg_parse(const char* msg, const int msg_length)
 {
     int rc = 1;
 
