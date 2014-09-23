@@ -8,7 +8,8 @@ macx:
 
 SUBDIRS += \
     object \
-    msg_parse
+    msg_parse \
+    aio_handler
 
 msg_parse.depands = object
 
