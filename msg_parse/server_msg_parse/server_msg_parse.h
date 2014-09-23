@@ -21,6 +21,11 @@
 #  define SERVER_MSG_PARSESHARED_EXPORT MY_DECL_IMPORT
 #endif
 
+
+#include <iostream>
+#include <string.h>
+using namespace std;
+
 SERVER_MSG_PARSESHARED_EXPORT int server_msg_parse(const char* msg, const int msg_length);
 
 #endif // SERVER_MSG_PARSE_H

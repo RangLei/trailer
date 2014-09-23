@@ -33,24 +33,10 @@ struct OBJECTSHARED_EXPORT MBYTE
     int bit8:1;
 };
 
-struct OBJECTSHARED_EXPORT Basic_Info
+enum OBJECTSHARED_EXPORT GPS_ISValid_Flag
 {
-    char terminal_cdkey[16];
-    unsigned int data_length;
-    char terminal_msg_type[1];
-    unsigned int time;
-    char data_type[1];
-    double latitude;
-    double longitude;
-    unsigned int speed;
-    unsigned int direction;
-    unsigned int date;
-    double pdop;
-    unsigned int rssi;
-    MBYTE box_status;
-    double battery_voltage;
-    MBYTE trailer_status;
-    MBYTE checksum;
+    GPS_VALID_FLAG = 0,
+    GPS_INVALID_FLAG
 };
 
 enum OBJECTSHARED_EXPORT MSG_Type
@@ -64,18 +50,43 @@ enum OBJECTSHARED_EXPORT MSG_Type
     MSG_HEARTBEAT_TYPE
 };
 
-enum OBJECTSHARED_EXPORT GPS_ISValid_Flag
-{
-    GPS_VALID_FLAG = 0,
-    GPS_INVALID_FLAG
-};
-
 enum OBJECTSHARED_EXPORT Longitude_Latitude_Type
 {
     W_TYPE,
     E_TYPE,
     N_TYPE,
     S_TYPE
+};
+
+struct OBJECTSHARED_EXPORT CDKey_And_DataLen{
+    char terminal_cdkey[16];
+    unsigned int data_length;
+};
+
+struct OBJECTSHARED_EXPORT GPS_Info{
+    char time[7];
+    GPS_ISValid_Flag gps_isvalid_flag;
+    double latitude;
+    Longitude_Latitude_Type latitude_type;
+    double longitude;
+    Longitude_Latitude_Type longitude_type;
+    double speed;
+    unsigned int direction;
+    char date[7];
+    double pdop;
+    unsigned int rssi;
+};
+
+
+struct OBJECTSHARED_EXPORT Basic_Info
+{
+    CDKey_And_DataLen cdkey_and_datalen;
+    MSG_Type msg_type;
+    GPS_Info gps_info;
+    MBYTE box_status;
+    double battery_voltage;
+    MBYTE trailer_status;
+    MBYTE checksum;
 };
 
 #endif // OBJECT_H
