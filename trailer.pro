@@ -1,7 +1,6 @@
 TEMPLATE = subdirs
 
-macx:
-{
+macx {
     CONFIG-=app_bundle
     QMAKE_MAC_SDK = macosx10.10
 }
@@ -9,7 +8,8 @@ macx:
 SUBDIRS += \
     object \
     msg_parse \
-    aio_handler
+    aio_handler \
+    msg_handler
 
-msg_parse.depands = object
+msg_parse.depands = object msg_handler
 

@@ -1,10 +1,14 @@
 %{
 #include "server_msg_parse.h"
 #include "object/object.h"
+#include "msg_handler/msg_handler.h"
 
-extern int server_msgparse(void);
-extern int server_msglex(void);
-extern void server_msgerror(const char* ptr);
+#include "server_msg_yacc.h"
+
+extern int server_msgparse(char *msg, int msg_len, Msg_Handler_Base *msg_handler);
+
+extern int server_msglex(YYSTYPE * lvalp, void *scanner);
+extern void server_msgerror(void *scanner, Msg_Handler_Base *msg_handler, const char* ptr);
 
 GPS_Info*
 copy_by_gps_info(GPS_Info* dst, const GPS_Info* src);
@@ -13,6 +17,12 @@ CDKey_And_DataLen*
 copy_by_cdkey_datelen(CDKey_And_DataLen* dst, const CDKey_And_DataLen* src);
 
 %}
+
+%pure-parser
+
+%lex-param {void *scanner}
+%parse-param {void *scanner}
+%parse-param {Msg_Handler_Base *msg_handler}
 
 %union {
     char*   m_pchar;

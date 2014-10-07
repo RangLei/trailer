@@ -26,17 +26,22 @@
 #include "object/object.h"
 #include "server_msg_yacc.h"
 
-extern int server_msgparse(void);
-extern int server_msglex(void);
+extern int server_msgparse(void *scanner, Msg_Handler_Base *msg_handler);
+//extern int server_msgparse(char *msg, int msg_len, Msg_Handler_Base *msg_handler);
+//extern int server_msglex(void);
 
-void server_msgerror(const char* ptr);
+//void server_msgerror(const char* ptr);
 
-extern "C"
-{
-int server_msgwrap(void);
-}
+//extern "C"
+//{
+//int server_msgwrap(void);
+//}
 
 %}
+
+%option reentrant
+%option bison-bridge
+%option yylineno
 
 sig_cdkey   T[0-9]{7}
 sig_datalength  [0-9]+
@@ -74,51 +79,51 @@ sig_empty_data [ ]
 
 %%
 "#["  {BEGIN SIG_START; }
-<SIG_START>{sig_cdkey}   { BEGIN SIG_CDKEY_START; server_msglval.m_pchar = strdup(yytext); return SIG_CDKEY; }
-<SIG_CDKEY_START>{sig_datalength}  { BEGIN SIG_MSG_TYPE_START; server_msglval.m_uint = atoi(yytext); return SIG_DATALENGTH; }
-<SIG_MSG_TYPE_START>{sig_basic_type}  { BEGIN SIG_DATE_START; server_msglval.m_msg_type = MSG_BASIC_TYPE; return SIG_MSG_BASIC; }
-<SIG_MSG_TYPE_START>{sig_extern_type}  { BEGIN SIG_DATE_START; server_msglval.m_msg_type = MSG_EXTERN_TYPE; return SIG_MSG_EXTERN; }
-<SIG_MSG_TYPE_START>{sig_third_type}  { BEGIN SIG_DATE_START; server_msglval.m_msg_type = MSG_THIRD_TYPE; return SIG_MSG_THIRD; }
-<SIG_MSG_TYPE_START>{sig_ack_type}  { BEGIN SIG_ACK_TYPE; server_msglval.m_msg_type = MSG_ACK_TYPE; return SIG_MSG_ACK; }
-<SIG_MSG_TYPE_START>{sig_heart_type}  { BEGIN SIG_HEART_TYPE; server_msglval.m_msg_type = MSG_HEARTBEAT_TYPE; return SIG_MSG_HEARTBEAT; }
-<SIG_MSG_TYPE_START>{sig_ipchange_type}  { BEGIN SIG_IPCHANGE_TYPE; server_msglval.m_msg_type = MSG_IPCHANGE_TYPE; return SIG_MSG_IPCHANGE; }
-<SIG_MSG_TYPE_START>{sig_alarm_type}  { BEGIN SIG_ALARM_TYPE; server_msglval.m_msg_type = MSG_ALARM_TYPE; return SIG_MSG_ALARM; }
+<SIG_START>{sig_cdkey}   { BEGIN SIG_CDKEY_START; yylval->m_pchar = strdup(yytext); return SIG_CDKEY; }
+<SIG_CDKEY_START>{sig_datalength}  { BEGIN SIG_MSG_TYPE_START; yylval->m_uint = atoi(yytext); return SIG_DATALENGTH; }
+<SIG_MSG_TYPE_START>{sig_basic_type}  { BEGIN SIG_DATE_START; yylval->m_msg_type = MSG_BASIC_TYPE; return SIG_MSG_BASIC; }
+<SIG_MSG_TYPE_START>{sig_extern_type}  { BEGIN SIG_DATE_START; yylval->m_msg_type = MSG_EXTERN_TYPE; return SIG_MSG_EXTERN; }
+<SIG_MSG_TYPE_START>{sig_third_type}  { BEGIN SIG_DATE_START; yylval->m_msg_type = MSG_THIRD_TYPE; return SIG_MSG_THIRD; }
+<SIG_MSG_TYPE_START>{sig_ack_type}  { BEGIN SIG_ACK_TYPE; yylval->m_msg_type = MSG_ACK_TYPE; return SIG_MSG_ACK; }
+<SIG_MSG_TYPE_START>{sig_heart_type}  { BEGIN SIG_HEART_TYPE; yylval->m_msg_type = MSG_HEARTBEAT_TYPE; return SIG_MSG_HEARTBEAT; }
+<SIG_MSG_TYPE_START>{sig_ipchange_type}  { BEGIN SIG_IPCHANGE_TYPE; yylval->m_msg_type = MSG_IPCHANGE_TYPE; return SIG_MSG_IPCHANGE; }
+<SIG_MSG_TYPE_START>{sig_alarm_type}  { BEGIN SIG_ALARM_TYPE; yylval->m_msg_type = MSG_ALARM_TYPE; return SIG_MSG_ALARM; }
 
-<SIG_ALARM_TYPE>{sig_byte_1}   { server_msglval.m_pchar = strdup(yytext); return SIG_BYTE_1; }
-<SIG_ALARM_TYPE>{sig_sn}   { BEGIN SIG_DATE_START; server_msglval.m_uint = atoi(yytext); return SIG_SN; }
+<SIG_ALARM_TYPE>{sig_byte_1}   { yylval->m_pchar = strdup(yytext); return SIG_BYTE_1; }
+<SIG_ALARM_TYPE>{sig_sn}   { BEGIN SIG_DATE_START; yylval->m_uint = atoi(yytext); return SIG_SN; }
 
-<SIG_ACK_TYPE>{sig_byte_1}    { server_msglval.m_pchar = strdup(yytext); return SIG_BYTE_1; }
-<SIG_ACK_TYPE>{sig_sn}   { BEGIN SIG_DATE_START; server_msglval.m_uint = atoi(yytext); return SIG_SN; }
+<SIG_ACK_TYPE>{sig_byte_1}    { yylval->m_pchar = strdup(yytext); return SIG_BYTE_1; }
+<SIG_ACK_TYPE>{sig_sn}   { BEGIN SIG_DATE_START; yylval->m_uint = atoi(yytext); return SIG_SN; }
 
-<SIG_IPCHANGE_TYPE>{sig_ip_byte}    { server_msglval.m_pchar = strdup(yytext); return SIG_IP_BYTE; }
-<SIG_IPCHANGE_TYPE>{sig_sn}   { BEGIN SIG_DATE_START; server_msglval.m_uint = atoi(yytext); return SIG_SN; }
+<SIG_IPCHANGE_TYPE>{sig_ip_byte}    { yylval->m_pchar = strdup(yytext); return SIG_IP_BYTE; }
+<SIG_IPCHANGE_TYPE>{sig_sn}   { BEGIN SIG_DATE_START; yylval->m_uint = atoi(yytext); return SIG_SN; }
 
-<SIG_HEART_TYPE>{sig_ip_byte}    { BEGIN SIG_DATE_START; server_msglval.m_pchar = strdup(yytext); return SIG_IP_BYTE; }
+<SIG_HEART_TYPE>{sig_ip_byte}    { BEGIN SIG_DATE_START; yylval->m_pchar = strdup(yytext); return SIG_IP_BYTE; }
 
-<SIG_DATE_START>{sig_date}  { BEGIN SIG_GPS_START; server_msglval.m_pchar = strdup(yytext); return SIG_SSMMHH; }
+<SIG_DATE_START>{sig_date}  { BEGIN SIG_GPS_START; yylval->m_pchar = strdup(yytext); return SIG_SSMMHH; }
 
-<SIG_GPS_START>{sig_valid_gps_flag}   { server_msglval.m_gps_isvalid_flag = GPS_VALID_FLAG; return SIG_GPS_ISVALID_FLAG; }
-<SIG_GPS_START>{sig_invalid_gps_flag} { server_msglval.m_gps_isvalid_flag = GPS_INVALID_FLAG; return SIG_GPS_ISVALID_FLAG; }
-<SIG_GPS_START>{sig_latitude} { server_msglval.m_udouble = atof(yytext); return SIG_LATITUDE; }
-<SIG_GPS_START>{sig_longitude}    { server_msglval.m_udouble = atof(yytext); return SIG_LONGITUDE; }
-<SIG_GPS_START>"W" { server_msglval.m_longitude_latitude_type = W_TYPE; return SIG_W_E_N_S_TYPE; }
-<SIG_GPS_START>"E" { server_msglval.m_longitude_latitude_type = E_TYPE; return SIG_W_E_N_S_TYPE; }
-<SIG_GPS_START>"N" { BEGIN SIG_SPEED_START; server_msglval.m_longitude_latitude_type = N_TYPE; return SIG_W_E_N_S_TYPE; }
-<SIG_GPS_START>"S" { BEGIN SIG_SPEED_START; server_msglval.m_longitude_latitude_type = S_TYPE; return SIG_W_E_N_S_TYPE; }
-<SIG_SPEED_START>{sig_speed}   { BEGIN SIG_DIRECTION_START; server_msglval.m_udouble = atof(yytext); return SIG_SPEED; }
-<SIG_SPEED_START>{sig_empty_data}   { BEGIN SIG_DIRECTION_START; server_msglval.m_udouble = 0.0; return SIG_SPEED; }
-<SIG_DIRECTION_START>{sig_direction}    { BEGIN SIG_GPS_START; server_msglval.m_udouble = atof(yytext); return SIG_DIRECTION; }
-<SIG_GPS_START>{sig_date}  { BEGIN SIG_PDOP_START; server_msglval.m_pchar = strdup(yytext); return SIG_DDMMYY; }
-<SIG_PDOP_START>{sig_pdop}    { BEGIN SIG_RSSI_START; server_msglval.m_udouble = atof(yytext); return SIG_PDOP; }
-<SIG_RSSI_START>{sig_rssi}    { BEGIN SIG_GPS_START; server_msglval.m_udouble = atof(yytext); return SIG_RSSI; }
-<SIG_PDOP_START>{sig_byte_1}  {  server_msglval.m_pchar = strdup(yytext); return SIG_BYTE_1; }
-<SIG_GPS_START>{sig_byte_1}  {  server_msglval.m_pchar = strdup(yytext); return SIG_BYTE_1; }
-<SIG_GPS_START>{sig_battery_voltage} { server_msglval.m_udouble = atof(yytext); return SIG_BATTERY_VOLTAGE; }
-<SIG_GPS_START>{sig_trailer_odometer} { server_msglval.m_ulong = atol(yytext); return SIG_TRAILER_ODOMETER; }
-<SIG_GPS_START>{sig_hardware_version} { BEGIN SIG_VERSION_START; server_msglval.m_pchar = strdup(yytext); return SIG_HARDWARE_VERSION; }
-<SIG_VERSION_START>{sig_fimware_version} { BEGIN SIG_GPS_START; server_msglval.m_pchar = strdup(yytext); return SIG_FIMWARE_VERSION; }
-<SIG_GPS_START>{sig_byte_4}   { server_msglval.m_pchar = strdup(yytext); return SIG_BYTE_4; }
-<SIG_GPS_START>{sig_empty_data} { server_msglval.m_pchar = strdup(yytext); return SIG_ECU_DATA; }
+<SIG_GPS_START>{sig_valid_gps_flag}   { yylval->m_gps_isvalid_flag = GPS_VALID_FLAG; return SIG_GPS_ISVALID_FLAG; }
+<SIG_GPS_START>{sig_invalid_gps_flag} { yylval->m_gps_isvalid_flag = GPS_INVALID_FLAG; return SIG_GPS_ISVALID_FLAG; }
+<SIG_GPS_START>{sig_latitude} { yylval->m_udouble = atof(yytext); return SIG_LATITUDE; }
+<SIG_GPS_START>{sig_longitude}    { yylval->m_udouble = atof(yytext); return SIG_LONGITUDE; }
+<SIG_GPS_START>"W" { yylval->m_longitude_latitude_type = W_TYPE; return SIG_W_E_N_S_TYPE; }
+<SIG_GPS_START>"E" { yylval->m_longitude_latitude_type = E_TYPE; return SIG_W_E_N_S_TYPE; }
+<SIG_GPS_START>"N" { BEGIN SIG_SPEED_START; yylval->m_longitude_latitude_type = N_TYPE; return SIG_W_E_N_S_TYPE; }
+<SIG_GPS_START>"S" { BEGIN SIG_SPEED_START; yylval->m_longitude_latitude_type = S_TYPE; return SIG_W_E_N_S_TYPE; }
+<SIG_SPEED_START>{sig_speed}   { BEGIN SIG_DIRECTION_START; yylval->m_udouble = atof(yytext); return SIG_SPEED; }
+<SIG_SPEED_START>{sig_empty_data}   { BEGIN SIG_DIRECTION_START; yylval->m_udouble = 0.0; return SIG_SPEED; }
+<SIG_DIRECTION_START>{sig_direction}    { BEGIN SIG_GPS_START; yylval->m_udouble = atof(yytext); return SIG_DIRECTION; }
+<SIG_GPS_START>{sig_date}  { BEGIN SIG_PDOP_START; yylval->m_pchar = strdup(yytext); return SIG_DDMMYY; }
+<SIG_PDOP_START>{sig_pdop}    { BEGIN SIG_RSSI_START; yylval->m_udouble = atof(yytext); return SIG_PDOP; }
+<SIG_RSSI_START>{sig_rssi}    { BEGIN SIG_GPS_START; yylval->m_udouble = atof(yytext); return SIG_RSSI; }
+<SIG_PDOP_START>{sig_byte_1}  {  yylval->m_pchar = strdup(yytext); return SIG_BYTE_1; }
+<SIG_GPS_START>{sig_byte_1}  {  yylval->m_pchar = strdup(yytext); return SIG_BYTE_1; }
+<SIG_GPS_START>{sig_battery_voltage} { yylval->m_udouble = atof(yytext); return SIG_BATTERY_VOLTAGE; }
+<SIG_GPS_START>{sig_trailer_odometer} { yylval->m_ulong = atol(yytext); return SIG_TRAILER_ODOMETER; }
+<SIG_GPS_START>{sig_hardware_version} { BEGIN SIG_VERSION_START; yylval->m_pchar = strdup(yytext); return SIG_HARDWARE_VERSION; }
+<SIG_VERSION_START>{sig_fimware_version} { BEGIN SIG_GPS_START; yylval->m_pchar = strdup(yytext); return SIG_FIMWARE_VERSION; }
+<SIG_GPS_START>{sig_byte_4}   { yylval->m_pchar = strdup(yytext); return SIG_BYTE_4; }
+<SIG_GPS_START>{sig_empty_data} { yylval->m_pchar = strdup(yytext); return SIG_ECU_DATA; }
 <SIG_START>"," { return SEP; }
 <SIG_DIRECTION_START>"," { return SEP; }
 <SIG_CDKEY_START>"," { return SEP; }
@@ -138,21 +143,37 @@ sig_empty_data [ ]
 
 %%
 
-int server_msg_parse(const char* msg, const int msg_length)
-{
-    int rc = 1;
+//int server_msg_parse(const char* msg, const int msg_length)
+//{
+//    int rc = 1;
 
-    return rc;
-}
+//    return rc;
+//}
 
-void server_msgerror(const char* ptr)
+void server_msgerror(void *scanner, Msg_Handler_Base *msg_handler, const char* ptr)
 {
-    fprintf(stderr, "Flex Error: line %d at [%s] reson %s\r\n", yylineno, yytext, ptr);
+    int lineno = yyget_lineno ( scanner );
+    char *text = yyget_text( scanner );
+    fprintf(stderr, "Flex Error: line %d at [%s] reson %s\r\n", lineno, text, ptr);
     fflush(stderr);
 }
 
-int server_msgwrap(void)
+int server_msg_parse(char *msg, int msg_len, Msg_Handler_Base *msg_handler)
 {
-return 1;
+    int rc = 0;
+    void *scanner = NULL;
+    rc = server_msglex_init(&scanner);
+    if(rc != 0) return -1;
+
+    server_msg_scan_bytes(msg, msg_len, scanner);
+    //server_msg_scan_string(msg, scanner);
+    server_msgparse(scanner, msg_handler);
+    server_msglex_destroy(scanner);
+
+    return 0;
+}
+int server_msgwrap(void *scanner)
+{
+    return 1;
 }
 

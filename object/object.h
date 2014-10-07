@@ -58,12 +58,14 @@ enum OBJECTSHARED_EXPORT Longitude_Latitude_Type
     S_TYPE
 };
 
-struct OBJECTSHARED_EXPORT CDKey_And_DataLen{
+struct OBJECTSHARED_EXPORT CDKey_And_DataLen
+{
     char terminal_cdkey[16];
     unsigned int data_length;
 };
 
-struct OBJECTSHARED_EXPORT GPS_Info{
+struct OBJECTSHARED_EXPORT GPS_Info
+{
     char time[7];
     GPS_ISValid_Flag gps_isvalid_flag;
     double latitude;

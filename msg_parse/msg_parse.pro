@@ -1,6 +1,6 @@
 TEMPLATE = subdirs
 
-macx:
+macx
 {
     CONFIG-=app_bundle
     QMAKE_MAC_SDK = macosx10.10
