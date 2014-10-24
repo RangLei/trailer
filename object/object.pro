@@ -19,6 +19,8 @@ TEMPLATE = lib
 
 DEFINES += OBJECT_LIBRARY
 
+QMAKE_CXXFLAGS += -std=c++0x
+
 SOURCES += object.cpp
 
 HEADERS += object.h

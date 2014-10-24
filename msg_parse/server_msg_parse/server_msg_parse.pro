@@ -17,6 +17,8 @@ TEMPLATE = lib
 
 DEFINES += SERVER_MSG_PARSE_LIBRARY
 
+QMAKE_CXXFLAGS += -std=c++0x
+
 INCLUDEPATH = ../..
 DESTDIR = ../../lib
 

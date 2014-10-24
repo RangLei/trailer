@@ -9,6 +9,8 @@ QT       -= core gui
 TARGET = aio_handler
 TEMPLATE = lib
 
+DESTDIR = ../lib
+
 DEFINES += AIO_HANDLER_LIBRARY
 
 macx
@@ -26,6 +28,8 @@ macx {
     INCLUDEPATH += $(TOOLKITS)/include
     LIBS += -L$(TOOLKITS)/lib -lACE
 }
+
+QMAKE_CXXFLAGS += -std=c++0x
 
 SOURCES += \
     aio_client_handler.cpp \

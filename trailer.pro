@@ -9,7 +9,8 @@ SUBDIRS += \
     object \
     msg_parse \
     aio_handler \
-    msg_handler
+    msg_handler \
+    main
 
 msg_parse.depands = object msg_handler
 

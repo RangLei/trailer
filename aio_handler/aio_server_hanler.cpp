@@ -7,26 +7,29 @@
 AIO_Server_Handler::AIO_Server_Handler() :
     _timeout(0)
   ,_time_id(0)
-  ,_message_block(NULL)
+  ,_message_block_read(NULL)
+  ,_message_block_write(NULL)
 {
 }
 
 int AIO_Server_Handler::init(time_t timeout)
 {
     _timeout = timeout;
-    if (_message_block == NULL)
-        _message_block = new ACE_Message_Block (MAX_RECV_BUFFER_SIZE);
-
     return 0;
 }
 
 void AIO_Server_Handler::release()
 {
-    if (_message_block != NULL)
+    if (_message_block_read != NULL)
     {
-        _message_block->release();
-        delete _message_block;
-        _message_block = NULL;
+        _message_block_read->release();
+        _message_block_read = NULL;
+    }
+
+    if (_message_block_write != NULL)
+    {
+        _message_block_write->release();
+        _message_block_write = NULL;
     }
 }
 
@@ -73,10 +76,6 @@ void AIO_Server_Handler::open (ACE_HANDLE new_handle,
         release();
         delete this;
     }
-    else
-    {
-        _read_stream.read(*_message_block, MAX_RECV_BUFFER_SIZE);
-    }
 }
 
 void AIO_Server_Handler::close ()
@@ -97,6 +96,136 @@ void AIO_Server_Handler::close ()
 void AIO_Server_Handler::handle_time_out (const ACE_Time_Value &tv,
                                           const void *act)
 {
+    ACE_DEBUG((LM_INFO, ACE_TEXT("%s : handle_timeout!")));
+}
 
+void AIO_Server_Handler::handle_write_stream (const ACE_Asynch_Write_Stream::Result &result)
+{
+    ACE_TRACE(__PRETTY_FUNCTION__);
+
+    if( !result.success() )
+    {
+        ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : error!"), __PRETTY_FUNCTION__));
+
+        this->close();
+        this->release();
+
+        delete this;
+    }
+
+    ACE_Message_Block &msg  = result.message_block();
+
+    if(msg.length() != 0)
+    {
+        _write_stream.write(msg, msg.length());
+    }
+    else
+    {
+        ACE_DEBUG((LM_INFO, ACE_TEXT("%s : success!"), __PRETTY_FUNCTION__));
+
+        _message_block_write = msg.next();
+
+        int rc = handle_write(&msg);
+        if(rc != 0)
+        {
+            ACE_DEBUG((LM_INFO, ACE_TEXT("%s : handle_write return %d, delete this!"), __PRETTY_FUNCTION__, rc));
+
+            this->close();
+            this->release();
+
+            delete this;
+            return;
+        }
+
+        if(_message_block_write != NULL)
+        {
+            _write_stream.write(*_message_block_write, _message_block_write->length());
+        }
+    }
+
+
+}
+
+void AIO_Server_Handler::handle_read_stream (const ACE_Asynch_Read_Stream::Result &result)
+{
+    ACE_DEBUG((LM_INFO, ACE_TEXT("%s : 111111111111\n"), __PRETTY_FUNCTION__));
+    if( !result.success() )
+    {
+        ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : error!"), __PRETTY_FUNCTION__));
+
+        this->close();
+        this->release();
+
+        delete this;
+    }
+
+    ACE_Message_Block &msg  = result.message_block();
+
+    _message_block_read = msg.next();
+
+    int rc = handle_read(&msg);
+    if(rc == -1)
+    {
+        ACE_DEBUG((LM_INFO, ACE_TEXT("%s : handle_write return %d, delete this!"), __PRETTY_FUNCTION__, rc));
+
+        this->close();
+        this->release();
+
+        delete this;
+    }
+
+    if(rc > 0)
+    {
+        _message_block_read = &msg;
+        _read_stream.read(*_message_block_read, _message_block_read->size() - _message_block_read->length());
+    }
+    else
+    {
+        if(_message_block_read != NULL)
+        {
+            _read_stream.read(*_message_block_read, _message_block_read->length());
+        }
+    }
+}
+
+int AIO_Server_Handler::handle_read(ACE_Message_Block *msg_block)
+{
+    msg_block->reset();
+    read(msg_block);
+    return 0;
+}
+
+int AIO_Server_Handler::handle_write(ACE_Message_Block *msg_block)
+{
+    return 0;
+}
+
+int AIO_Server_Handler::read(ACE_Message_Block *msg_block)
+{
+    if(_message_block_read == 0)
+    {
+        _message_block_read = msg_block;
+        _read_stream.read(*msg_block, msg_block->size());
+    }
+    else
+    {
+        _message_block_read->cont(msg_block);
+    }
+    return 0;
+}
+
+int AIO_Server_Handler::write(ACE_Message_Block *msg_block)
+{
+    if(_message_block_write == NULL)
+    {
+        _message_block_write = msg_block;
+        _write_stream.write(*_message_block_write, _message_block_write->length());
+    }
+    else
+    {
+        _message_block_write->cont(msg_block);
+    }
+
+    return 0;
 }
 

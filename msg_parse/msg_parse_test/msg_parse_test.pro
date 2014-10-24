@@ -11,6 +11,8 @@ macx
 
 DESTDIR = ../../bin
 
+QMAKE_CXXFLAGS += -std=c++0x
+
 INCLUDEPATH = ../..
 LIBS += -L../../lib -lobject -lserver_msg_parse -lclient_msg_parse
 

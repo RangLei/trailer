@@ -9,6 +9,8 @@ QT       -= core gui
 TARGET = msg_handler
 TEMPLATE = lib
 
+DESTDIR = ../lib
+
 DEFINES += MSG_HANDLER_LIBRARY
 
 macx
@@ -28,6 +30,8 @@ macx
     INCLUDEPATH += $(TOOLKITS)/include
     LIBS += -L$(TOOLKITS)/lib -lACE
 }
+
+QMAKE_CXXFLAGS += -std=c++0x
 
 SOURCES += msg_handler.cpp
 
