@@ -1,4 +1,7 @@
 %{
+#include <cstring>
+using namespace std;
+
 #include "server_msg_parse.h"
 #include "object/object.h"
 #include "msg_handler/msg_handler.h"

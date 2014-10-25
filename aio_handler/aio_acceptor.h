@@ -11,7 +11,7 @@ class AIO_Acceptor : public ACE_Asynch_Acceptor<HANDLER>
 {
 public:
     AIO_Acceptor(void);
-    void init(time_t timeout = 2);
+    int init(time_t timeout = 2);
 
     HANDLER *make_handler (void);
 private:
@@ -24,9 +24,10 @@ AIO_Acceptor<HANDLER>::AIO_Acceptor(void) : _heart_time(0)
 }
 
 template <class HANDLER>
-void AIO_Acceptor<HANDLER>::init(time_t timeout)
+int AIO_Acceptor<HANDLER>::init(time_t timeout)
 {
     _heart_time = timeout;
+    return 0;
 }
 
 template <class HANDLER>

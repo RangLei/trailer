@@ -13,8 +13,7 @@ DESTDIR = ../lib
 
 DEFINES += AIO_HANDLER_LIBRARY
 
-macx
-{
+macx {
     CONFIG-=app_bundle
     QMAKE_MAC_SDK = macosx10.10
 }

@@ -18,7 +18,11 @@ void AIO_Server_Msg_Handler::open (ACE_HANDLE new_handle, ACE_Message_Block &mes
  {
      //todo:
      //...
-     ACE_OS::fprintf(stdout, "--:%s\n", msg_block->rd_ptr());
+     ACE_OS::fprintf(stdout, "%d--:%s\n", msg_block->length(),
+                     msg_block->rd_ptr());
+
+     ACE_OS::fflush(stdout);
+
      bool continue_recv = false;
      if(continue_recv)
      {

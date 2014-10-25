@@ -13,20 +13,17 @@ DESTDIR = ../lib
 
 DEFINES += MSG_HANDLER_LIBRARY
 
-macx
-{
+macx {
     CONFIG-=app_bundle
     QMAKE_MAC_SDK = macosx10.10
 }
 
-macx
-{
+macx {
     INCLUDEPATH += $(ACE_ROOT)
     LIBS += -L$(ACE_ROOT)/lib -lACE
 }
 
-!macx
-{
+!macx {
     INCLUDEPATH += $(TOOLKITS)/include
     LIBS += -L$(TOOLKITS)/lib -lACE
 }

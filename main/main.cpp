@@ -16,8 +16,17 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     //AIO_Acceptor
     AIO_Acceptor<AIO_Server_Msg_Handler> *acceptor = AIO_Acceptor_Singleton<AIO_Server_Msg_Handler>::instance();
 
+    int rc = acceptor->init();
+    if(rc != 0)
+    {
+        ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : acceptpor init error!\n"), __PRETTY_FUNCTION__));
+        return -1;
+    }
+
     ACE_INET_Addr local_addr(8000);
-    int rc = acceptor->open(local_addr);
+    rc = acceptor->open(local_addr, 0, true,
+                        ACE_DEFAULT_ASYNCH_BACKLOG, 1,
+                        ACE_Proactor::instance());
     if(rc != 0)
     {
         ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : acceptpor open error!\n"), __PRETTY_FUNCTION__));
@@ -28,7 +37,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
     ACE_Proactor *proactor = ACE_Proactor::instance();
 
-    //while(!proactor->event_loop_done())
+    while(!proactor->event_loop_done())
     {
         proactor->run_event_loop();
     }

@@ -41,7 +41,7 @@ extern int server_msgparse(void *scanner, Msg_Handler_Base *msg_handler);
 
 %option reentrant
 %option bison-bridge
-%option yylineno
+
 
 sig_cdkey   T[0-9]{7}
 sig_datalength  [0-9]+
