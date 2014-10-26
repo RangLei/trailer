@@ -10,7 +10,9 @@ SUBDIRS += \
     msg_parse \
     aio_handler \
     msg_handler \
-    main
+    main \
+    database_mysql \
+    test
 
 msg_parse.depands = object msg_handler
 
