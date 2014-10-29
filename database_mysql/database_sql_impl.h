@@ -24,14 +24,16 @@ public:
               const char *unix_socket = 0,
               unsigned long clientflag = 0);
 
+    void release();
+
+    int do_db_real_query(const char* cmd, const int &length);
+
 private:
     bool connect_sql();
 
     bool select_sql_db();
 
     void close_sql_db();
-
-    void release();
 
 private:
     Database_SQL_Impl();

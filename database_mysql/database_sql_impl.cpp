@@ -141,6 +141,24 @@ void Database_SQL_Impl::release()
     this->close_sql_db();
 }
 
+int Database_SQL_Impl::do_db_real_query(const char *cmd, const int &length)
+{
+    int rc =  mysql_real_query(_mysql, cmd, length);
+    if (rc)
+    {
+        fprintf(stdout, "do_db_real_query() ---->cmd:[%s] Error:[%s %d].\n",
+                cmd,
+                mysql_error(_mysql),
+                mysql_errno(_mysql));
+        fflush(stdout);
+    }
+
+    fprintf(stdout, "do_db_real_query() --->cmd:[%s] Succss.\n", cmd);
+    fflush(stdout);
+
+    return rc;
+}
+
 //            //_mysql->reconnect = 2;
 //            const char* query = "select * from test";
 

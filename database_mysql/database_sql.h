@@ -20,6 +20,8 @@ public:
 
     void release();
 
+    int do_db_real_query(const char* cmd, const int &length);
+
 private:
     Database_SQL_Impl   *_sql_impl;
 };

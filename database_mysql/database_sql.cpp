@@ -40,3 +40,11 @@ void Database_SQL::release()
         _sql_impl = NULL;
     }
 }
+
+int Database_SQL::do_db_real_query(const char *cmd, const int &length)
+{
+    if (cmd)
+        return _sql_impl->do_db_real_query(cmd, length);
+
+    return -1;
+}
