@@ -23,7 +23,9 @@ macx {
 QMAKE_CXXFLAGS += -std=c++0x
 
 INCLUDEPATH += ..
-LIBS += -L../lib -laio_handler -lserver_msg_parse -lmsg_handler
+LIBS += -L../lib -laio_handler -lserver_msg_parse -lmsg_handler -ldatabase_mysql
+LIBS += -L/usr/lib/x86_64-linux-gnu -lmysqlclient -lpthread -lz -lm -ldl
+
 SOURCES += main.cpp \
     aio_server_msg_handler.cpp
 

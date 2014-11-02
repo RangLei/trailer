@@ -16,10 +16,10 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     //todo: daemon
 
     //todo: db
-    Database_SQL *db_sql = new Database_SQL;
+    Database_SQL *db_sql = Database_SQL::instance();
     if (NULL == db_sql)
     {
-        ACE_DEBUG((LM_ERROR, ACE_TEXT("%s :new Database_SQL fail\n"), __PRETTY_FUNCTION__));
+        ACE_DEBUG((LM_ERROR, ACE_TEXT("%s :Database_SQL::instance() fail\n"), __PRETTY_FUNCTION__));
         return -1;
     }
     if (!db_sql->init("localhost", "root", "123456", "telitek", 3306, NULL))
@@ -28,11 +28,25 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
         return -1;
     }
 
+    char *creat_table = "CREATE TABLE IF NOT EXISTS `tra_download` ("
+                        "`id` int(11) NOT NULL AUTO_INCREMENT,"
+                        "`created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
+                        "`ip` varchar(16) COLLATE utf8_unicode_ci NOT NULL,"
+                        "`content` varchar(255) COLLATE utf8_unicode_ci NOT NULL,"
+                        "`flag` tinyint(4) NOT NULL DEFAULT '0',"
+                        "PRIMARY KEY (`id`)"
+                        ") ENGINE=InnoDB DEFAULT CHARSET=utf8";
+    if (db_sql->do_db_real_query(creat_table, strlen(creat_table)))
+    {
+        ACE_DEBUG((LM_ERROR, ACE_TEXT("%s :database creat tra_download table fail\n"), __PRETTY_FUNCTION__));
+        return -1;
+    }
+
     //AIO_Acceptor
     AIO_Acceptor<AIO_Server_Msg_Handler> *acceptor = AIO_Acceptor_Singleton<AIO_Server_Msg_Handler>::instance();
 
 
-    int rc = acceptor->init(db_sql, 2);
+    int rc = acceptor->init(2);
     if(rc != 0)
     {
         ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : acceptpor init error!\n"), __PRETTY_FUNCTION__));

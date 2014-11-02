@@ -6,6 +6,12 @@ Database_SQL::Database_SQL()
 {
 }
 
+Database_SQL *Database_SQL::instance()
+{
+    static Database_SQL db;
+    return &db;
+}
+
 Database_SQL::~Database_SQL()
 {
     this->release();

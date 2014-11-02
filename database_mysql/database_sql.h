@@ -1,13 +1,13 @@
 #ifndef DATABASE_SQL_H
 #define DATABASE_SQL_H
 
-
 class Database_SQL_Impl;
 
 class Database_SQL
 {
 public:
-    Database_SQL();
+    static Database_SQL* instance();
+
     ~Database_SQL();
 
     bool init(const char *host,
@@ -23,6 +23,8 @@ public:
     int do_db_real_query(const char* cmd, const int &length);
 
 private:
+    Database_SQL();
+
     Database_SQL_Impl   *_sql_impl;
 };
 

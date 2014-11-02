@@ -5,6 +5,16 @@
 #include "msg_parse/server_msg_parse/server_msg_parse.h"
 #include "database_mysql/database_sql.h"
 
+AIO_Server_Msg_Handler::AIO_Server_Msg_Handler()
+    : _db_sql(Database_SQL::instance())
+{
+}
+
+AIO_Server_Msg_Handler::~AIO_Server_Msg_Handler()
+{
+    _db_sql = NULL;
+}
+
 void AIO_Server_Msg_Handler::open (ACE_HANDLE new_handle, ACE_Message_Block &message_block)
 {
     Super::open(new_handle, message_block);
