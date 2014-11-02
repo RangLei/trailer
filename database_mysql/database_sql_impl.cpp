@@ -1,3 +1,5 @@
+#include <sstream>
+#include <cstdlib>
 #include "database_sql_impl.h"
 
 Database_SQL_Impl::Database_SQL_Impl()
@@ -141,20 +143,102 @@ void Database_SQL_Impl::release()
     this->close_sql_db();
 }
 
-int Database_SQL_Impl::do_db_real_query(const char *cmd, const int &length)
+int Database_SQL_Impl::do_db_real_query(const char *p_cmd, const int &length)
 {
-    int rc =  mysql_real_query(_mysql, cmd, length);
+    int rc =  mysql_real_query(_mysql, p_cmd, length);
     if (rc)
     {
         fprintf(stdout, "do_db_real_query() ---->cmd:[%s] Error:[%s %d].\n",
-                cmd,
+                p_cmd,
                 mysql_error(_mysql),
                 mysql_errno(_mysql));
         fflush(stdout);
     }
+    else
+    {
+        fprintf(stderr, "do_db_real_query() ---->cmd:[%s] Success.\n", p_cmd);
+        fflush(stdout);
+    }
 
-    fprintf(stdout, "do_db_real_query() --->cmd:[%s] Succss.\n", cmd);
-    fflush(stdout);
+    return rc;
+}
+
+int Database_SQL_Impl::do_db_insert_table(const char *table, const TRA_Download_Table_Data &table_data)
+{
+    std::stringstream cmd;
+    cmd << "insert into " << table << " (" << "ip, content, flag" << ")"
+        << " values " << "("
+        << "\"" << table_data.ip << "\""
+        << ", "
+        << "\"" << table_data.content << "\""
+        << ", "
+        << table_data.flag
+        << ")";
+
+    std::string str_cmd = cmd.str();
+
+    int rc = do_db_real_query(str_cmd.c_str(), str_cmd.size());
+    if (!rc)
+    {
+        fprintf(stdout, "do_db_insert_table() Succss.\n");
+        fflush(stdout);
+    }
+
+    return rc;
+}
+
+int Database_SQL_Impl::do_db_select_table(const char *table, std::list<TRA_Download_Table_Data> &result_table_datas)
+{
+    std::stringstream cmd;
+    cmd << "select * from " << table << " where flag = 0";
+    std::string str_cmd = cmd.str();
+
+    int rc = do_db_real_query(str_cmd.c_str(), str_cmd.size());
+    if (!rc)
+    {
+        fprintf(stdout, "do_db_select_table() Succss.\n");
+        fflush(stdout);
+    }
+
+    MYSQL_RES* result = mysql_store_result(_mysql);
+    if (NULL != result)
+    {
+        MYSQL_ROW row;
+        while ((row = mysql_fetch_row(result)))
+        {
+            TRA_Download_Table_Data table_data;
+            table_data.primart_key = atoi(row[0]);
+            table_data.date = row[1];
+            table_data.ip = row[2];
+            table_data.content = row[3];
+            table_data.flag = atoi(row[4]);
+            result_table_datas.push_back(table_data);
+        }
+    }
+
+    return rc;
+}
+
+int Database_SQL_Impl::do_db_update_table(const char *table, const TRA_Download_Table_Data &table_data)
+{
+    std::stringstream cmd;
+    cmd << "update " << table << " set ip = "
+        << "\"" << table_data.ip << "\""
+        << ", "
+        << "content = "
+        << "\"" << table_data.content << "\""
+        << ", "
+        << "flag = " << table_data.flag
+        << " where id = " << table_data.primart_key;
+
+    std::string str_cmd;
+    str_cmd = cmd.str();
+    int rc = do_db_real_query(str_cmd.c_str(), str_cmd.size());
+    if (!rc)
+    {
+        fprintf(stdout, "do_db_update_table() Succss.\n");
+        fflush(stdout);
+    }
 
     return rc;
 }

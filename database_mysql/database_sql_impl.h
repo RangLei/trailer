@@ -4,13 +4,15 @@
 #include <mysql/mysql.h>
 #include <mysql/mysqld_error.h>
 #include <cstring>
+#include <list>
 #include <cstdio>
+
+#include "object/object.h"
 
 #ifndef SV_DATA_LEN
 #define SV_DATA_LEN 128
 #endif
 
-class Database_SQL;
 class Database_SQL_Impl
 {
     friend class Database_SQL;
@@ -26,7 +28,12 @@ public:
 
     void release();
 
-    int do_db_real_query(const char* cmd, const int &length);
+    int do_db_real_query(const char *p_cmd, const int &length);
+
+    int do_db_insert_table(const char *table, const TRA_Download_Table_Data &table_data);
+    int do_db_select_table(const char *table, std::list<TRA_Download_Table_Data> &result_table_datas);
+    int do_db_update_table(const char* table, const TRA_Download_Table_Data &table_data);
+
 
 private:
     bool connect_sql();

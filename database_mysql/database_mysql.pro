@@ -11,6 +11,8 @@ TEMPLATE = lib
 
 DEFINES += DATABASE_MYSQL_LIBRARY
 
+INCLUDEPATH = ..
+
 SOURCES += \
     database_sql.cpp \
     database_sql_impl.cpp

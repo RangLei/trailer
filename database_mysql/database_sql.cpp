@@ -47,10 +47,34 @@ void Database_SQL::release()
     }
 }
 
-int Database_SQL::do_db_real_query(const char *cmd, const int &length)
+int Database_SQL::do_db_real_query(const char *p_cmd, const int &length)
 {
-    if (cmd)
-        return _sql_impl->do_db_real_query(cmd, length);
+    if (p_cmd)
+        return _sql_impl->do_db_real_query(p_cmd, length);
+
+    return -1;
+}
+
+int Database_SQL::do_db_insert_table(const char* table, const TRA_Download_Table_Data& table_data)
+{
+    if (table)
+        return _sql_impl->do_db_insert_table(table, table_data);
+
+    return -1;
+}
+
+int Database_SQL::do_db_select_table(const char *table, std::list<TRA_Download_Table_Data> &result_table_datas)
+{
+    if (table)
+        return _sql_impl->do_db_select_table(table, result_table_datas);
+
+    return -1;
+}
+
+int Database_SQL::do_db_update_table(const char *table, const TRA_Download_Table_Data &table_data)
+{
+    if (table)
+        return _sql_impl->do_db_update_table(table, table_data);
 
     return -1;
 }

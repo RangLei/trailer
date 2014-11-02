@@ -21,6 +21,8 @@
 #  define OBJECTSHARED_EXPORT MY_DECL_IMPORT
 #endif
 
+#include <string>
+
 struct OBJECTSHARED_EXPORT MBYTE
 {
     int bit1:1;
@@ -90,5 +92,14 @@ struct OBJECTSHARED_EXPORT Basic_Info
     MBYTE trailer_status;
     MBYTE checksum;
 };
+
+struct OBJECTSHARED_EXPORT TRA_Download_Table_Data{
+    int primart_key;
+    std::string content;
+    std::string ip;
+    std::string date;
+    int flag;
+};
+
 
 #endif // OBJECT_H
