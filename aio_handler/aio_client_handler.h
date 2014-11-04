@@ -17,6 +17,11 @@ public:
     virtual void open (ACE_HANDLE new_handle, ACE_Message_Block &message_block);
     virtual void close ();
 
+    /// Called by ACE_Asynch_Acceptor to pass the addresses of the new
+    /// connections.
+    virtual void addresses (const ACE_INET_Addr &remote_address,
+                            const ACE_INET_Addr &local_address);
+
     virtual void handle_time_out (const ACE_Time_Value &tv,
                                     const void *act = 0);
 
@@ -46,6 +51,9 @@ protected:
 
     virtual void handle_write_stream (const ACE_Asynch_Write_Stream::Result &result);
     virtual void handle_read_stream (const ACE_Asynch_Read_Stream::Result &result);
+
+    ACE_INET_Addr _local_address;
+    ACE_INET_Addr _remote_address;
 
     ACE_Asynch_Read_Stream _read_stream;
     ACE_Asynch_Write_Stream _write_stream;

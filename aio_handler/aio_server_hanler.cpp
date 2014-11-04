@@ -3,6 +3,7 @@
 #include <ace/OS.h>
 #include <ace/Proactor.h>
 #include <ace/SOCK.h>
+#include <ace/Guard_T.h>
 
 AIO_Server_Handler::AIO_Server_Handler() :
     _timeout(0)
@@ -93,15 +94,24 @@ void AIO_Server_Handler::close ()
     ACE_OS::close(h);
 }
 
+void AIO_Server_Handler::addresses (const ACE_INET_Addr &remote_address,
+                                    const ACE_INET_Addr &local_address)
+{
+    _remote_address = remote_address;
+    _local_address = local_address;
+}
+
 void AIO_Server_Handler::handle_time_out (const ACE_Time_Value &tv,
                                           const void *act)
 {
-    ACE_DEBUG((LM_INFO, ACE_TEXT("%s : handle_timeout!")));
+    ACE_DEBUG((LM_INFO, ACE_TEXT("%s : handle_timeout!\n")));
 }
 
 void AIO_Server_Handler::handle_write_stream (const ACE_Asynch_Write_Stream::Result &result)
 {
     ACE_TRACE(__PRETTY_FUNCTION__);
+
+    ACE_Guard<ACE_Recursive_Thread_Mutex> write_lock (_write_mutex);
 
     if( !result.success() )
     {
@@ -148,6 +158,8 @@ void AIO_Server_Handler::handle_write_stream (const ACE_Asynch_Write_Stream::Res
 
 void AIO_Server_Handler::handle_read_stream (const ACE_Asynch_Read_Stream::Result &result)
 {
+    ACE_Guard<ACE_Recursive_Thread_Mutex> read_lock (_read_mutex);
+
     ACE_DEBUG((LM_INFO, ACE_TEXT("%s : 111111111111\n"), __PRETTY_FUNCTION__));
     if( !result.success() )
     {
@@ -166,7 +178,7 @@ void AIO_Server_Handler::handle_read_stream (const ACE_Asynch_Read_Stream::Resul
     int rc = handle_read(&msg);
     if(rc == -1)
     {
-        ACE_DEBUG((LM_INFO, ACE_TEXT("%s : handle_write return %d, delete this!"), __PRETTY_FUNCTION__, rc));
+        ACE_DEBUG((LM_INFO, ACE_TEXT("%s : handle_read return %d, delete this!"), __PRETTY_FUNCTION__, rc));
 
         this->close();
         this->release();
@@ -191,17 +203,22 @@ void AIO_Server_Handler::handle_read_stream (const ACE_Asynch_Read_Stream::Resul
 int AIO_Server_Handler::handle_read(ACE_Message_Block *msg_block)
 {
     msg_block->reset();
-    read(msg_block);
+    //read(msg_block);
     return 0;
 }
 
 int AIO_Server_Handler::handle_write(ACE_Message_Block *msg_block)
 {
+    ACE_DEBUG((LM_INFO, ACE_TEXT("%s : 2222222222222\n"), __PRETTY_FUNCTION__));
+
+    msg_block->release();
     return 0;
 }
 
 int AIO_Server_Handler::read(ACE_Message_Block *msg_block)
 {
+    ACE_Guard<ACE_Recursive_Thread_Mutex> read_lock (_read_mutex);
+
     if(_message_block_read == 0)
     {
         _message_block_read = msg_block;
@@ -216,6 +233,8 @@ int AIO_Server_Handler::read(ACE_Message_Block *msg_block)
 
 int AIO_Server_Handler::write(ACE_Message_Block *msg_block)
 {
+    ACE_Guard<ACE_Recursive_Thread_Mutex> write_lock (_write_mutex);
+
     if(_message_block_write == NULL)
     {
         _message_block_write = msg_block;

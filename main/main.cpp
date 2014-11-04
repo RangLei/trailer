@@ -2,11 +2,15 @@
 #include <ace/Log_Msg.h>
 #include <ace/Get_Opt.h>
 #include <ace/OS.h>
-
+#include <ace/Assert.h>
 #include <ace/Proactor.h>
-
+#include <ace/Time_Value.h>
+#include <ace/Asynch_Pseudo_Task.h>
 #include "aio_handler/aio_handler.h"
 #include "aio_server_msg_handler.h"
+#include "cmd_down_from_db.h"
+#include "reactor_task.h"
+
 #include "database_mysql/database_sql.h"
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
@@ -16,6 +20,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     //todo: daemon
 
     //todo: db
+
+#if 0
     Database_SQL *db_sql = Database_SQL::instance();
     if (NULL == db_sql)
     {
@@ -41,12 +47,16 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
         ACE_DEBUG((LM_ERROR, ACE_TEXT("%s :database creat tra_download table fail\n"), __PRETTY_FUNCTION__));
         return -1;
     }
+#endif
+    //reactor
+    Reactor_Task *reactor_task = Reactor_Task_Singleton::instance();
+    reactor_task->open();
 
     //AIO_Acceptor
     AIO_Acceptor<AIO_Server_Msg_Handler> *acceptor = AIO_Acceptor_Singleton<AIO_Server_Msg_Handler>::instance();
 
 
-    int rc = acceptor->init(2);
+    int rc = acceptor->init(0);
     if(rc != 0)
     {
         ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : acceptpor init error!\n"), __PRETTY_FUNCTION__));
@@ -65,6 +75,19 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
     ACE_DEBUG((LM_INFO, ACE_TEXT("%s : acceptpor open success!\n"), __PRETTY_FUNCTION__));
 
+    Cmd_Down_From_DB *cmd_down_from_db = Cmd_Down_From_DB_Singleton::instance();
+
+    ACE_ASSERT(cmd_down_from_db != NULL);
+
+    ACE_Time_Value tv(3);
+    rc = cmd_down_from_db->open(tv);
+    if(rc != 0)
+    {
+        ACE_DEBUG((LM_ERROR, ACE_TEXT("cmd_down_from_db->open error!\n")));
+        return -1;
+    }
+
+
     ACE_Proactor *proactor = ACE_Proactor::instance();
 
     while(!proactor->event_loop_done())
@@ -72,8 +95,13 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
         proactor->run_event_loop();
     }
 
-    delete  db_sql;
-    db_sql = NULL;
+    //delete  db_sql;
+    //db_sql = NULL;
+
+    cmd_down_from_db->close();
+
+    reactor_task->close();
+
     return 0;
 }
 

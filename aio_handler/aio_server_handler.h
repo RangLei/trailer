@@ -2,6 +2,9 @@
 #define AIO_SERVER_HANDLER_H
 #include <ace/Asynch_IO.h>
 #include <ace/Message_Block.h>
+#include <ace/INET_Addr.h>
+
+#include <ace/Recursive_Thread_Mutex.h>
 
 #define MAX_RECV_BUFFER_SIZE (1024*1024)
 
@@ -25,6 +28,11 @@ public:
      * @brief close
      */
     virtual void close ();
+
+    /// Called by ACE_Asynch_Acceptor to pass the addresses of the new
+    /// connections.
+    virtual void addresses (const ACE_INET_Addr &remote_address,
+                            const ACE_INET_Addr &local_address);
 
     virtual int read(ACE_Message_Block *msg_block);
     virtual int write(ACE_Message_Block *msg_block);
@@ -50,6 +58,9 @@ protected:
     virtual void handle_write_stream (const ACE_Asynch_Write_Stream::Result &result);
     virtual void handle_read_stream (const ACE_Asynch_Read_Stream::Result &result);
 
+    ACE_INET_Addr _local_address;
+    ACE_INET_Addr _remote_address;
+
     ACE_Asynch_Read_Stream _read_stream;
     ACE_Asynch_Write_Stream _write_stream;
 
@@ -58,6 +69,9 @@ protected:
 
     ACE_Message_Block *_message_block_read;
     ACE_Message_Block *_message_block_write;
+
+    ACE_Recursive_Thread_Mutex _read_mutex;
+    ACE_Recursive_Thread_Mutex _write_mutex;
 };
 
 #endif // AIO_SERVER_HANDLER_H

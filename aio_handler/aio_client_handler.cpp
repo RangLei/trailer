@@ -95,7 +95,12 @@ void AIO_Client_Handler::close ()
     ACE_OS::close(h);
 }
 
-
+void AIO_Client_Handler::addresses (const ACE_INET_Addr &remote_address,
+                                    const ACE_INET_Addr &local_address)
+{
+    _remote_address = remote_address;
+    _local_address = local_address;
+}
 
 void AIO_Client_Handler::reconnect()
 {
