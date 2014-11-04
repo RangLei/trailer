@@ -9,6 +9,7 @@
 
 #include "ip_aio_handler_map.h"
 
+class Database_SQL;
 class Cmd_Down_From_DB : public ACE_Handler
 {
 public:
@@ -22,6 +23,7 @@ public:
 private:
     long timer_id;
     IP_AIO_Handler_Map *ip_aio_handler_map;
+    Database_SQL *_db_sql;
 };
 
 typedef ACE_Singleton<Cmd_Down_From_DB, ACE_Thread_Mutex> Cmd_Down_From_DB_Singleton;

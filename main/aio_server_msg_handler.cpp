@@ -73,14 +73,15 @@ int AIO_Server_Msg_Handler::handle_input (ACE_HANDLE fd)
 
 int AIO_Server_Msg_Handler::handle_read(ACE_Message_Block *msg_block)
 {
-    //todo:
-    //...
-    //TRA_Download_Table_Data tra_table_data;
-    //tra_table_data.ip = xxx;
-    //.
-    //.
-    //.
-    //_db_sql->do_db_insert_table("tra_download", tra_table_data);
+    if (_db_sql)
+    {
+        TRA_Download_Table_Data tra_table_data;
+        tra_table_data.ip = this->_remote_address.get_host_addr();
+        tra_table_data.content = msg_block->rd_ptr();
+        tra_table_data.flag = 0;
+
+        _db_sql->do_db_insert_table("tra_download", tra_table_data);
+    }
 
     ACE_OS::fprintf(stdout, "%d--:%s\n", msg_block->length(),
                     msg_block->rd_ptr());
@@ -100,10 +101,6 @@ int AIO_Server_Msg_Handler::handle_read(ACE_Message_Block *msg_block)
 
 int AIO_Server_Msg_Handler::handle_write(ACE_Message_Block *msg_block)
 {
-    //todo:
-//    std::list<TRA_Download_Table_Data> tra_table_datas;
-//    _db_sql->do_db_select_table("tra_download", tra_table_datas);
-//    _db_sql->do_db_update_table("tra_download", tra_table_datas);
 
     msg_block->release();
     return 0;

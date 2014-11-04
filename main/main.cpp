@@ -21,7 +21,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
     //todo: db
 
-#if 0
+#if 1
     Database_SQL *db_sql = Database_SQL::instance();
     if (NULL == db_sql)
     {
