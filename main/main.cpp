@@ -3,14 +3,14 @@
 #include <ace/Get_Opt.h>
 #include <ace/OS.h>
 #include <ace/Assert.h>
-#include <ace/Proactor.h>
 #include <ace/Time_Value.h>
-#include <ace/Asynch_Pseudo_Task.h>
-#include "aio_handler/aio_handler.h"
-#include "aio_server_msg_handler.h"
-#include "cmd_down_from_db.h"
-#include "reactor_task.h"
 
+#include <mysql/mysql.h>
+
+#include "cmd_down_from_db.h"
+
+#include "server_msg_handler.h"
+#include "protocol/ace_protocol_acceptor.h"
 #include "database_mysql/database_sql.h"
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
@@ -22,16 +22,23 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     //todo: db
 
 #if 1
+    int rc = mysql_library_init(0, NULL, NULL);
+    if(rc != 0)
+    {
+        ACE_DEBUG((LM_ERROR, ACE_TEXT("%s :mysql_library_init fail\n"), __PRETTY_FUNCTION__));
+        return -1;
+    }
+
     Database_SQL *db_sql = Database_SQL::instance();
     if (NULL == db_sql)
     {
         ACE_DEBUG((LM_ERROR, ACE_TEXT("%s :Database_SQL::instance() fail\n"), __PRETTY_FUNCTION__));
-        return -1;
+        mysql_library_end(); return -1;
     }
     if (!db_sql->init("localhost", "root", "123456", "telitek", 3306, NULL))
     {
         ACE_DEBUG((LM_ERROR, ACE_TEXT("%s :database init fail\n"), __PRETTY_FUNCTION__));
-        return -1;
+        mysql_library_end(); return -1;
     }
 
     char *creat_table = "CREATE TABLE IF NOT EXISTS `tra_download` ("
@@ -45,32 +52,27 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     if (db_sql->do_db_real_query(creat_table, strlen(creat_table)))
     {
         ACE_DEBUG((LM_ERROR, ACE_TEXT("%s :database creat tra_download table fail\n"), __PRETTY_FUNCTION__));
-        return -1;
+        mysql_library_end(); return -1;
     }
 #endif
-    //reactor
-    Reactor_Task *reactor_task = Reactor_Task_Singleton::instance();
-    reactor_task->open();
-
     //AIO_Acceptor
-    AIO_Acceptor<AIO_Server_Msg_Handler> *acceptor = AIO_Acceptor_Singleton<AIO_Server_Msg_Handler>::instance();
+    ACE_Protocol_Acceptor<Server_MSG_Handler> *acceptor =
+            ACE_Protocol_Acceptor_Singleton<Server_MSG_Handler>::instance();
 
 
-    int rc = acceptor->init(0);
+    rc = acceptor->init(1);
     if(rc != 0)
     {
         ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : acceptpor init error!\n"), __PRETTY_FUNCTION__));
-        return -1;
+        mysql_library_end(); return -1;
     }
 
     ACE_INET_Addr local_addr(8000);
-    rc = acceptor->open(local_addr, 0, true,
-                        ACE_DEFAULT_ASYNCH_BACKLOG, 1,
-                        ACE_Proactor::instance());
+    rc = acceptor->open(local_addr);
     if(rc != 0)
     {
         ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : acceptpor open error!\n"), __PRETTY_FUNCTION__));
-        return -1;
+        mysql_library_end(); return -1;
     }
 
     ACE_DEBUG((LM_INFO, ACE_TEXT("%s : acceptpor open success!\n"), __PRETTY_FUNCTION__));
@@ -84,15 +86,15 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     if(rc != 0)
     {
         ACE_DEBUG((LM_ERROR, ACE_TEXT("cmd_down_from_db->open error!\n")));
-        return -1;
+        mysql_library_end(); return -1;
     }
 
 
-    ACE_Proactor *proactor = ACE_Proactor::instance();
+    ACE_Reactor *reactor = ACE_Reactor::instance();
 
-    while(!proactor->event_loop_done())
+    while(!reactor->reactor_event_loop_done())
     {
-        proactor->run_event_loop();
+        reactor->run_reactor_event_loop();
     }
 
     //delete  db_sql;
@@ -100,8 +102,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
     cmd_down_from_db->close();
 
-    reactor_task->close();
-
+    reactor->close();
+    mysql_library_end();
     return 0;
 }
 

@@ -9,6 +9,7 @@ SUBDIRS += \
     object \
     msg_parse \
     aio_handler \
+    protocol \
     msg_handler \
     main \
     database_mysql \

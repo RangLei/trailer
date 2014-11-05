@@ -23,22 +23,20 @@ macx {
 QMAKE_CXXFLAGS += -std=c++0x
 
 INCLUDEPATH += ..
-LIBS += -L../lib -laio_handler -lserver_msg_parse -lmsg_handler -ldatabase_mysql -lobject
-#LIBS += -L/usr/lib/x86_64-linux-gnu -lmysqlclient -lmysqld -lpthread -lz -lm -ldl
-LIBS += -L/usr/lib/x86_64-linux-gnu -lmysqlclient -lpthread -lz -lm -ldl
+LIBS += -L../lib -lprotocol -lserver_msg_parse -lmsg_handler -ldatabase_mysql -lobject
+LIBS += -L/usr/lib/x86_64-linux-gnu -lmysqlclient -lmysqld -lpthread -lz -lm -ldl
+#LIBS += -L/usr/lib/x86_64-linux-gnu -lmysqlclient -lpthread -lz -lm -ldl
 
 SOURCES += main.cpp \
-    aio_server_msg_handler.cpp \
     cmd_down_from_db.cpp \
-    ip_aio_handler_map.cpp \
-    reactor_task.cpp
+    server_msg_handler.cpp \
+    ip_handler_map.cpp
 
 include(deployment.pri)
 qtcAddDeployment()
 
 HEADERS += \
-    aio_server_msg_handler.h \
     cmd_down_from_db.h \
-    ip_aio_handler_map.h \
-    reactor_task.h
+    server_msg_handler.h \
+    ip_handler_map.h
 

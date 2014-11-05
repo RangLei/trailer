@@ -6,11 +6,12 @@
 
 #include <ace/Singleton.h>
 #include <ace/Thread_Mutex.h>
+#include <ace/Event_Handler.h>
 
-#include "ip_aio_handler_map.h"
+#include "ip_handler_map.h"
 
 class Database_SQL;
-class Cmd_Down_From_DB : public ACE_Handler
+class Cmd_Down_From_DB : public ACE_Event_Handler
 {
 public:
     Cmd_Down_From_DB();
@@ -18,11 +19,11 @@ public:
     int open(ACE_Time_Value const &interval);
     void close();
 
-    virtual void handle_time_out (const ACE_Time_Value &tv,
-                                  const void *act = 0);
+    virtual int handle_timeout (const ACE_Time_Value &tv,
+                                const void *act = 0);
 private:
     long timer_id;
-    IP_AIO_Handler_Map *ip_aio_handler_map;
+    IP_Handler_Map *ip_handler_map;
     Database_SQL *_db_sql;
 };
 
