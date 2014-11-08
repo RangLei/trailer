@@ -163,7 +163,7 @@ int Database_SQL_Impl::do_db_real_query(const char *p_cmd, const int &length)
     return rc;
 }
 
-int Database_SQL_Impl::do_db_insert_table(const char *table, const TRA_Download_Table_Data &table_data)
+int Database_SQL_Impl::do_db_insert_table(const char *table, const TRA_Table_Data &table_data)
 {
     std::stringstream cmd;
     cmd << "insert into " << table << " (" << "ip, content, flag" << ")"
@@ -187,7 +187,7 @@ int Database_SQL_Impl::do_db_insert_table(const char *table, const TRA_Download_
     return rc;
 }
 
-int Database_SQL_Impl::do_db_select_table(const char *table, std::list<TRA_Download_Table_Data> &result_table_datas)
+int Database_SQL_Impl::do_db_select_table(const char *table, std::list<TRA_Table_Data> &result_table_datas)
 {
     std::stringstream cmd;
     cmd << "select * from " << table << " where flag = 0";
@@ -206,7 +206,7 @@ int Database_SQL_Impl::do_db_select_table(const char *table, std::list<TRA_Downl
         MYSQL_ROW row;
         while ((row = mysql_fetch_row(result)))
         {
-            TRA_Download_Table_Data table_data;
+            TRA_Table_Data table_data;
             table_data.primart_key = atoi(row[0]);
             table_data.date = row[1];
             table_data.ip = row[2];
@@ -219,7 +219,7 @@ int Database_SQL_Impl::do_db_select_table(const char *table, std::list<TRA_Downl
     return rc;
 }
 
-int Database_SQL_Impl::do_db_update_table(const char *table, const TRA_Download_Table_Data &table_data)
+int Database_SQL_Impl::do_db_update_table(const char *table, const TRA_Table_Data &table_data)
 {
     std::stringstream cmd;
     cmd << "update " << table << " set ip = "

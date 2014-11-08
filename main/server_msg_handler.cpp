@@ -63,7 +63,7 @@ int Server_MSG_Handler::handle_recv_message(const char* buf, int length)
 {
     if (_db_sql)
     {
-        TRA_Download_Table_Data tra_table_data;
+        TRA_Table_Data tra_table_data;
 
         ACE_INET_Addr remote_addr;
         peer().get_remote_addr(remote_addr);
@@ -72,7 +72,7 @@ int Server_MSG_Handler::handle_recv_message(const char* buf, int length)
         tra_table_data.content = buf;
         tra_table_data.flag = 0;
 
-        _db_sql->do_db_insert_table("tra_download", tra_table_data);
+        _db_sql->do_db_insert_table("tra_upload", tra_table_data);
     }
 
     ACE_OS::fprintf(stdout, "%d--:%s\n", length, buf);

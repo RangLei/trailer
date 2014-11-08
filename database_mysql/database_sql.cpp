@@ -55,7 +55,7 @@ int Database_SQL::do_db_real_query(const char *p_cmd, const int &length)
     return -1;
 }
 
-int Database_SQL::do_db_insert_table(const char* table, const TRA_Download_Table_Data& table_data)
+int Database_SQL::do_db_insert_table(const char* table, const TRA_Table_Data& table_data)
 {
     if (table)
         return _sql_impl->do_db_insert_table(table, table_data);
@@ -63,7 +63,7 @@ int Database_SQL::do_db_insert_table(const char* table, const TRA_Download_Table
     return -1;
 }
 
-int Database_SQL::do_db_select_table(const char *table, std::list<TRA_Download_Table_Data> &result_table_datas)
+int Database_SQL::do_db_select_table(const char *table, std::list<TRA_Table_Data> &result_table_datas)
 {
     if (table)
         return _sql_impl->do_db_select_table(table, result_table_datas);
@@ -71,7 +71,7 @@ int Database_SQL::do_db_select_table(const char *table, std::list<TRA_Download_T
     return -1;
 }
 
-int Database_SQL::do_db_update_table(const char *table, const TRA_Download_Table_Data &table_data)
+int Database_SQL::do_db_update_table(const char *table, const TRA_Table_Data &table_data)
 {
     if (table)
         return _sql_impl->do_db_update_table(table, table_data);

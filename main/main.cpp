@@ -40,6 +40,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     //read param from ini
     {
         ACE_Configuration_Heap  ini;
+        ini.open(512);
         ACE_Ini_ImpExp          ini_import(ini);
 
         ACE_TCHAR               *ini_file = ACE_TEXT("trailer.ini");
@@ -58,14 +59,28 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
             if(rc != 0)  ACE_DEBUG((LM_INFO, ACE_TEXT("ini open_section [%s] error!\n"), ACE_TEXT("database")));
             else
             {
-                ini.get_string_value(db_section, ACE_TEXT("db_host"), db_host);
-                ini.get_string_value(db_section, ACE_TEXT("db_user"), db_user);
-                ini.get_string_value(db_section, ACE_TEXT("db_password"), db_password);
-                ini.get_string_value(db_section, ACE_TEXT("db_name"), db_name);
-                ini.get_integer_value(db_section, ACE_TEXT("db_port"), db_port);
-                ini.get_integer_value(db_section, ACE_TEXT("is_create_db"), is_create_db);
-                ini.get_integer_value(db_section, ACE_TEXT("is_create_table"), is_create_table);
-                ini.get_integer_value(db_section, ACE_TEXT("db_polling_interval"), db_polling_interval);
+                ACE_TString    db_port_             = ACE_TEXT("3306");
+                ACE_TString    is_create_db_        = ACE_TEXT("0");
+                ACE_TString    is_create_table_     = ACE_TEXT("0");
+                ACE_TString    db_polling_interval_ = ACE_TEXT("3");
+
+                rc = ini.get_string_value(db_section, ACE_TEXT("db_host"), db_host);
+                if (!rc) ini.get_string_value(db_section, ACE_TEXT("db_user"), db_user);
+                if (!rc) ini.get_string_value(db_section, ACE_TEXT("db_password"), db_password);
+                if (!rc) ini.get_string_value(db_section, ACE_TEXT("db_name"), db_name);
+                if (!rc) ini.get_string_value(db_section, ACE_TEXT("db_port"), db_port_);
+                if (!rc) ini.get_string_value(db_section, ACE_TEXT("is_create_db"), is_create_db_);
+                if (!rc) ini.get_string_value(db_section, ACE_TEXT("is_create_table"), is_create_table_);
+                if (!rc) ini.get_string_value(db_section, ACE_TEXT("db_polling_interval"), db_polling_interval_);
+                if (rc != 0)
+                {
+                    ACE_DEBUG((LM_INFO, ACE_TEXT("[database]: get_string_value error!\n")));
+                    return -1;
+                }
+                db_port = ACE_OS::atoi(db_port_.c_str());
+                is_create_db = ACE_OS::atoi(is_create_db_.c_str());
+                is_create_table = ACE_OS::atoi(is_create_table_.c_str());
+                db_polling_interval = ACE_OS::atoi(db_polling_interval_.c_str());
             }
 
             ACE_Configuration_Section_Key network_section;
@@ -73,8 +88,18 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
             if(rc != 0)  ACE_DEBUG((LM_INFO, ACE_TEXT("ini open_section [%s] error!\n"), ACE_TEXT("network")));
             else
             {
-                ini.get_integer_value(network_section, ACE_TEXT("tcp_listen_port"), tcp_listen_port);
-                ini.get_integer_value(network_section, ACE_TEXT("socket_timeout"), socket_timeout);
+                ACE_TString    tcp_listen_port_     = ACE_TEXT("20000");
+                ACE_TString    socket_timeout_      = ACE_TEXT("1");
+
+                rc = ini.get_string_value(network_section, ACE_TEXT("tcp_listen_port"), tcp_listen_port_);
+                if (!rc) ini.get_string_value(network_section, ACE_TEXT("socket_timeout"), socket_timeout_);
+                if (rc != 0)
+                {
+                    ACE_DEBUG((LM_INFO, ACE_TEXT("[network]: get_string_value error!\n")));
+                    return -1;
+                }
+                tcp_listen_port = ACE_OS::atoi(tcp_listen_port_.c_str());
+                socket_timeout = ACE_OS::atoi(socket_timeout_.c_str());
             }
 
             ACE_Configuration_Section_Key main_section;
@@ -82,7 +107,14 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
             if(rc != 0)  ACE_DEBUG((LM_INFO, ACE_TEXT("ini open_section [%s] error!\n"), ACE_TEXT("main")));
             else
             {
-                ini.get_integer_value(main_section, ACE_TEXT("is_daemon"), is_daemon);
+                ACE_TString    is_daemon_           = ACE_TEXT("0");
+                rc = ini.get_string_value(main_section, ACE_TEXT("is_daemon"), is_daemon_);
+                if (rc != 0)
+                {
+                    ACE_DEBUG((LM_INFO, ACE_TEXT("[main]: get_string_value error!\n")));
+                    return -1;
+                }
+                is_daemon = ACE_OS::atoi(is_daemon_.c_str());
             }
         }
     }
@@ -117,20 +149,35 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
     if(is_create_table)
     {
-        char *creat_table = "CREATE TABLE IF NOT EXISTS `tra_download` ("
-                            "`id` int(11) NOT NULL AUTO_INCREMENT,"
-                            "`created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
-                            "`ip` varchar(16) COLLATE utf8_unicode_ci NOT NULL,"
-                            "`content` varchar(255) COLLATE utf8_unicode_ci NOT NULL,"
-                            "`flag` tinyint(4) NOT NULL DEFAULT '0',"
-                            "PRIMARY KEY (`id`)"
-                            ") ENGINE=InnoDB DEFAULT CHARSET=utf8";
-        if (db_sql->do_db_real_query(creat_table, strlen(creat_table)))
+        char *creat_tra_download_table = "CREATE TABLE IF NOT EXISTS `tra_download` ("
+                                         "`id` int(11) NOT NULL AUTO_INCREMENT,"
+                                         "`created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
+                                         "`ip` varchar(16) COLLATE utf8_unicode_ci NOT NULL,"
+                                         "`content` varchar(255) COLLATE utf8_unicode_ci NOT NULL,"
+                                         "`flag` tinyint(4) NOT NULL DEFAULT '0',"
+                                         "PRIMARY KEY (`id`)"
+                                         ") ENGINE=InnoDB DEFAULT CHARSET=utf8";
+        if (db_sql->do_db_real_query(creat_tra_download_table, strlen(creat_tra_download_table)))
         {
             ACE_DEBUG((LM_ERROR, ACE_TEXT("%s :database creat tra_download table fail\n"), __PRETTY_FUNCTION__));
             mysql_library_end(); return -1;
         }
+
+        char *creat_tra_upload_table = "CREATE TABLE IF NOT EXISTS `tra_upload` ("
+                                       "`id` int(11) NOT NULL AUTO_INCREMENT,"
+                                       "`created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
+                                       "`ip` varchar(16) COLLATE utf8_unicode_ci NOT NULL,"
+                                       "`content` varchar(255) COLLATE utf8_unicode_ci NOT NULL,"
+                                       "`flag` tinyint(4) NOT NULL DEFAULT '0',"
+                                       "PRIMARY KEY (`id`)"
+                                       ") ENGINE=InnoDB DEFAULT CHARSET=utf8";
+        if (db_sql->do_db_real_query(creat_tra_upload_table, strlen(creat_tra_upload_table)))
+        {
+            ACE_DEBUG((LM_ERROR, ACE_TEXT("%s :database creat tra_upload table fail\n"), __PRETTY_FUNCTION__));
+            mysql_library_end(); return -1;
+        }
     }
+
 #endif
 
     //AIO_Acceptor

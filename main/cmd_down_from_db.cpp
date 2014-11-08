@@ -55,13 +55,13 @@ int Cmd_Down_From_DB::handle_timeout (const ACE_Time_Value &tv,
     }
 
     // from database telitek abd table tra_download
-    std::list<TRA_Download_Table_Data> tra_table_datas;
+    std::list<TRA_Table_Data> tra_table_datas;
     if (_db_sql)
     {
         _db_sql->do_db_select_table("tra_download", tra_table_datas);
     }
 
-    std::list<TRA_Download_Table_Data>::iterator iter;
+    std::list<TRA_Table_Data>::iterator iter;
     for ( iter = tra_table_datas.begin(); iter != tra_table_datas.end(); ++iter)
     {
         ACE_DEBUG((LM_ERROR, ACE_TEXT("content:%s !\n"),iter->content.c_str()));

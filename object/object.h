@@ -93,7 +93,7 @@ struct OBJECTSHARED_EXPORT Basic_Info
     MBYTE checksum;
 };
 
-struct OBJECTSHARED_EXPORT TRA_Download_Table_Data{
+struct OBJECTSHARED_EXPORT TRA_Table_Data{
     int primart_key;
     std::string content;
     std::string ip;

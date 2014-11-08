@@ -25,8 +25,8 @@ QMAKE_CXXFLAGS += -std=c++0x
 
 INCLUDEPATH += ..
 LIBS += -L../lib -lprotocol -lserver_msg_parse -lmsg_handler -ldatabase_mysql -lobject
-LIBS += -L/usr/lib/x86_64-linux-gnu -lmysqlclient -lmysqld -lpthread -lz -lm -ldl
-#LIBS += -L/usr/lib/x86_64-linux-gnu -lmysqlclient -lpthread -lz -lm -ldl
+#LIBS += -L/usr/lib/x86_64-linux-gnu -lmysqlclient -lmysqld -lpthread -lz -lm -ldl
+LIBS += -L/usr/lib/x86_64-linux-gnu -lmysqlclient -lpthread -lz -lm -ldl
 
 SOURCES += main.cpp \
     cmd_down_from_db.cpp \
