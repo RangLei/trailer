@@ -12,8 +12,8 @@ SUBDIRS += \
     protocol \
     msg_handler \
     main \
-    database_mysql \
-    test
+    database_mysql
 
 msg_parse.depands = object msg_handler
 
+main.depands = database_mysql
