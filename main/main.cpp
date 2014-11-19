@@ -16,6 +16,8 @@
 
 #include "server_msg_handler.h"
 #include "protocol/ace_protocol_acceptor.h"
+#include "server_msg_handler_udp.h"
+
 #include "database_mysql/database_sql.h"
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
@@ -202,6 +204,15 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
     ACE_DEBUG((LM_INFO, ACE_TEXT("%s : acceptpor open success!\n"), __PRETTY_FUNCTION__));
 
+    //open udp_handler
+    Server_Msg_Handler_UDP *server_msg_handler_udp = Server_Msg_Handler_UDP_Singleton::instance();
+    rc = server_msg_handler_udp->open();
+    if(rc != 0)
+    {
+        ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : server_msg_handler_udp open error!\n"), __PRETTY_FUNCTION__));
+        mysql_library_end(); return -1;
+    }
+
     Cmd_Down_From_DB *cmd_down_from_db = Cmd_Down_From_DB_Singleton::instance();
 
     ACE_ASSERT(cmd_down_from_db != NULL);
@@ -222,13 +233,11 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
         reactor->run_reactor_event_loop();
     }
 
-    delete  db_sql;
-    db_sql = NULL;
-
     cmd_down_from_db->close();
 
     reactor->close();
     mysql_library_end();
+
     return 0;
 }
 

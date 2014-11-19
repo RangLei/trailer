@@ -91,12 +91,20 @@ int Server_Msg_Handler_UDP::handle_input(ACE_HANDLE fd)
         ACE_OS::fflush(stdout);
 
     }
+    else
+    {
+        return -1;
+    }
 
     return 0;
 }
 
 int Server_Msg_Handler_UDP::handle_close(ACE_HANDLE fd, ACE_Reactor_Mask mask)
 {
+    //reopen
+    close();
+    open();
+
     return 0;
 }
 
