@@ -42,9 +42,9 @@ int Server_Msg_Handler_UDP::open()
         return -1;
     }
 
-    this->set_handle(_sock_dgram.get_handle());
+    //this->set_handle(_sock_dgram.get_handle());
 
-    rc = ACE_Reactor::instance()->register_handler(this, ACE_Event_Handler::READ_MASK);
+    rc = ACE_Reactor::instance()->register_handler(_sock_dgram.get_handle(), this, ACE_Event_Handler::READ_MASK);
     if(rc != 0)
     {
         ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : ACE_Reactor::register_handler error!")
@@ -58,7 +58,7 @@ int Server_Msg_Handler_UDP::open()
 
 void Server_Msg_Handler_UDP::close()
 {
-    ACE_Reactor::instance()->remove_handler(this, ACE_Event_Handler::ALL_EVENTS_MASK);
+    ACE_Reactor::instance()->remove_handler(_sock_dgram.get_handle(), ACE_Event_Handler::ALL_EVENTS_MASK);
     _sock_dgram.close();
 }
 
