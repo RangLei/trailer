@@ -5,19 +5,21 @@
 #include <ace/Reactor.h>
 
 #include "database_mysql/database_sql.h"
+#include "server_msg_handler_udp.h"
 
-Cmd_Down_From_DB::Cmd_Down_From_DB() :
-    timer_id(-1)
-  , ip_handler_map(NULL)
-  , _db_sql(Database_SQL::instance())
+Cmd_Down_From_DB::Cmd_Down_From_DB()
+    : timer_id(-1)
+    , addr_handler_map(NULL)
+    , _db_sql(Database_SQL::instance())
+    , _server_msg_handler_udp(Server_Msg_Handler_UDP_Singleton::instance())
 {
 }
 
 int Cmd_Down_From_DB::open(ACE_Time_Value const &interval)
 {
-    ip_handler_map = IP_Handler_Map_Singleton::instance();
+    addr_handler_map = Addr_Handler_Map_Singleton::instance();
 
-    if(ip_handler_map == NULL)
+    if(addr_handler_map == NULL)
     {
         ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : ip_handler_map == NULL error!\n")));
         return -1;
@@ -48,7 +50,7 @@ int Cmd_Down_From_DB::handle_timeout (const ACE_Time_Value &tv,
 {
     ACE_DEBUG((LM_INFO, ACE_TEXT("%s : 111111111\n"), __PRETTY_FUNCTION__));
 
-    if(ip_handler_map == NULL)
+    if(addr_handler_map == NULL)
     {
         ACE_DEBUG((LM_INFO, ACE_TEXT("%s : ip_handler_map == NULL error!\n"), __PRETTY_FUNCTION__));
         return 0;
@@ -66,18 +68,19 @@ int Cmd_Down_From_DB::handle_timeout (const ACE_Time_Value &tv,
     {
         ACE_DEBUG((LM_ERROR, ACE_TEXT("content:%s !\n"),iter->content.c_str()));
 
-        unsigned long ip = ACE_OS::inet_addr(iter->ip.c_str());
-        ip = ACE_NTOHL(ip);
+        ACE_INET_Addr addr(iter->ip.c_str());
 
         int fd = -1;
 
         int rc = 0;
-        rc = ip_handler_map->find(ip, fd);
+        rc = addr_handler_map->find(addr, fd);
         if( rc == -1 )//not find
         {
-            ACE_DEBUG((LM_ERROR, ACE_TEXT("IP = %s : fd = %d not find\n")
+            ACE_DEBUG((LM_INFO, ACE_TEXT("Addr = %s : fd = %d not find send by udp\n")
                        , iter->ip.c_str()
                        , fd));
+            const ACE_TCHAR *msg = iter->content.c_str();
+            _server_msg_handler_udp->send_message(addr, msg, ACE_OS::strlen(msg));
         }
         else
         {

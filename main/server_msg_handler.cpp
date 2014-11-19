@@ -2,12 +2,10 @@
 
 #include "server_msg_handler.h"
 #include "database_mysql/database_sql.h"
-#include "ip_handler_map.h"
+#include "addr_handler_map.h"
 
 Server_MSG_Handler::Server_MSG_Handler()
     : _db_sql(Database_SQL::instance())
-    , _remote_ip(0)
-
 {
 }
 
@@ -17,16 +15,13 @@ int Server_MSG_Handler::open(void* acceptor_or_connector)
 
     if(rc == 0)
     {
-        ACE_INET_Addr remote_addr;
+        this->peer().get_remote_addr(_remote_addr);
 
-        this->peer().get_remote_addr(remote_addr);
-        _remote_ip = remote_addr.get_ip_address();
+        Addr_Handler_Map *addr_handler_map =
+                Addr_Handler_Map_Singleton::instance();
+        ACE_ASSERT(addr_handler_map != NULL);
 
-        IP_Handler_Map *ip_handler_map =
-                IP_Handler_Map_Singleton::instance();
-        ACE_ASSERT(ip_handler_map != NULL);
-
-        int rc = ip_handler_map->bind(_remote_ip, this->get_handle());
+        int rc = addr_handler_map->bind(_remote_addr, this->get_handle());
         if(rc == -1)
         {
             ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : ipo_handler_map->bind error!\n")
@@ -40,17 +35,18 @@ int Server_MSG_Handler::open(void* acceptor_or_connector)
 
 int Server_MSG_Handler::close(u_long flags)
 {
-    IP_Handler_Map *ip_handler_map =
-            IP_Handler_Map_Singleton::instance();
+    Addr_Handler_Map *addr_handler_map =
+            Addr_Handler_Map_Singleton::instance();
 
-    ACE_ASSERT(ip_handler_map != NULL);
+    ACE_ASSERT(addr_handler_map != NULL);
 
     {
-        int rc = ip_handler_map->unbind(_remote_ip);
+        int rc = addr_handler_map->unbind(_remote_addr);
         if(rc == -1)
         {
-            ACE_DEBUG((LM_ERROR, ACE_TEXT("ip_handler_map->unbind(%d) error\n")
-                   , _remote_ip));
+            ACE_TCHAR addr_str [128];
+            _remote_addr.addr_to_string(addr_str, sizeof(addr_str));
+            ACE_DEBUG((LM_ERROR, ACE_TEXT("addr_handler_map->unbind(%s) error\n"), addr_str));
         }
     }
 
@@ -64,11 +60,9 @@ int Server_MSG_Handler::handle_recv_message(const char* buf, int length)
     if (_db_sql)
     {
         TRA_Table_Data tra_table_data;
-
-        ACE_INET_Addr remote_addr;
-        peer().get_remote_addr(remote_addr);
-        tra_table_data.ip = remote_addr.get_host_addr();
-
+        ACE_TCHAR addr_str [128];
+        _remote_addr.addr_to_string(addr_str, sizeof(addr_str));
+        tra_table_data.ip = addr_str;
         tra_table_data.content = buf;
         tra_table_data.flag = 0;
 

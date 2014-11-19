@@ -8,9 +8,10 @@
 #include <ace/Thread_Mutex.h>
 #include <ace/Event_Handler.h>
 
-#include "ip_handler_map.h"
+#include "addr_handler_map.h"
 
 class Database_SQL;
+class Server_Msg_Handler_UDP;
 class Cmd_Down_From_DB : public ACE_Event_Handler
 {
 public:
@@ -23,8 +24,9 @@ public:
                                 const void *act = 0);
 private:
     long timer_id;
-    IP_Handler_Map *ip_handler_map;
+    Addr_Handler_Map *addr_handler_map;
     Database_SQL *_db_sql;
+    Server_Msg_Handler_UDP *_server_msg_handler_udp;
 };
 
 typedef ACE_Singleton<Cmd_Down_From_DB, ACE_Thread_Mutex> Cmd_Down_From_DB_Singleton;

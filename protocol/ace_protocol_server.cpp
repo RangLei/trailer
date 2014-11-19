@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#define MAX_RECV_SIZE (1024 * 1024)
+
 ACE_Protocol_Server::ACE_Protocol_Server() : _time_out( 0 )
   , _timer_id(-1)
   , _msg_block_recv(NULL)

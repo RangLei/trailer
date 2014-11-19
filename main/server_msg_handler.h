@@ -4,6 +4,7 @@
 #include "protocol/ace_protocol_server.h"
 
 class Database_SQL;
+class Server_Msg_Handler_UDP;
 class Server_MSG_Handler : public ACE_Protocol_Server
 {
     typedef ACE_Protocol_Server Super;
@@ -18,7 +19,8 @@ public:
 
 private:
     Database_SQL *_db_sql;
-    ACE_UINT32 _remote_ip;
+    Server_Msg_Handler_UDP *_server_msg_handler_udp;
+    ACE_INET_Addr _remote_addr;
 };
 
 #endif // SERVER_MSG_HANDLER_H
