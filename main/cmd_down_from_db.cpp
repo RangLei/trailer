@@ -79,9 +79,9 @@ int Cmd_Down_From_DB::handle_timeout (const ACE_Time_Value &tv,
             ACE_DEBUG((LM_INFO, ACE_TEXT("Addr = %s : fd = %d not find send by udp\n")
                        , iter->ip.c_str()
                        , fd));
-            const ACE_TCHAR *msg = iter->content.c_str();
-            rc = _server_msg_handler_udp->send_message(addr, msg, ACE_OS::strlen(msg));
-            if (rc != ACE_OS::strlen(msg))
+            std::string msg = iter->content + "\n";
+            rc = _server_msg_handler_udp->send_message(addr, msg.c_str(), msg.size());
+            if (rc != msg.size())
             {
                 ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : rc = %d send error\n")
                            , __PRETTY_FUNCTION__
@@ -95,10 +95,10 @@ int Cmd_Down_From_DB::handle_timeout (const ACE_Time_Value &tv,
         else
         {
             ACE_DEBUG((LM_DEBUG, ACE_TEXT("%s : 001\n"), __PRETTY_FUNCTION__));
-            const ACE_TCHAR *msg = iter->content.c_str();
+            std::string msg = iter->content + "\n";
 
-            rc = ACE_OS::send(fd, msg, ACE_OS::strlen(msg));
-            if (rc != ACE_OS::strlen(msg))
+            rc = ACE_OS::send(fd, msg.c_str(), msg.size());
+            if (rc != msg.size())
             {
                 ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : rc = %d send error\n")
                            , __PRETTY_FUNCTION__

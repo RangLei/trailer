@@ -190,7 +190,7 @@ int Database_SQL_Impl::do_db_insert_table(const char *table, const TRA_Table_Dat
 int Database_SQL_Impl::do_db_select_table(const char *table, std::list<TRA_Table_Data> &result_table_datas)
 {
     std::stringstream cmd;
-    cmd << "select * from " << table << " where flag = 0";
+    cmd << "select id, created, ip, content, flag from " << table << " where flag = 0";
     std::string str_cmd = cmd.str();
 
     int rc = do_db_real_query(str_cmd.c_str(), str_cmd.size());
