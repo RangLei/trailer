@@ -18,7 +18,7 @@ int Server_Msg_Handler_UDP::init(int port, ACE_TCHAR* ip)
     _local_addr.set_port_number(port);
 
     int rc = 0;
-    if(ip == NULL)
+    if(ip != NULL)
         rc = _local_addr.set_address(ip, strlen(ip));
 
     if(rc != 0)
