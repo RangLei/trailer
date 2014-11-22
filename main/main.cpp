@@ -206,6 +206,13 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
     //open udp_handler
     Server_Msg_Handler_UDP *server_msg_handler_udp = Server_Msg_Handler_UDP_Singleton::instance();
+    rc = server_msg_handler_udp->init(tcp_listen_port);
+    if(rc != 0)
+    {
+        ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : server_msg_handler_udp init(%d) error!\n"), __PRETTY_FUNCTION__, tcp_listen_port));
+        mysql_library_end(); return -1;
+    }
+
     rc = server_msg_handler_udp->open();
     if(rc != 0)
     {

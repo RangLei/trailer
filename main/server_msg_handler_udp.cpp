@@ -65,14 +65,18 @@ void Server_Msg_Handler_UDP::close()
 int Server_Msg_Handler_UDP::handle_input(ACE_HANDLE fd)
 {
     ACE_INET_Addr remote_addr;
-    int rc = _sock_dgram.recv(_msg_block_recv->wr_ptr()
-                              , _msg_block_recv->size(), remote_addr);
+    char *ptr = _msg_block_recv->rd_ptr();
+    int size = _msg_block_recv->size();
+
+    ssize_t rc = _sock_dgram.recv(ptr, size, remote_addr);
 
 
     if(rc > 0)
     {
         char *buf = _msg_block_recv->rd_ptr();
         int length = rc;
+
+        buf[length] = '\0';
 
         if (_db_sql)
         {
