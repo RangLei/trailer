@@ -15,7 +15,18 @@ Server_Msg_Handler_UDP::Server_Msg_Handler_UDP()
 
 int Server_Msg_Handler_UDP::init(int port, ACE_TCHAR* ip)
 {
-    _local_addr.set(port, ip);
+    _local_addr.set_port_number(port);
+
+    int rc = 0;
+    if(ip == NULL)
+        rc = _local_addr.set_address(ip, strlen(ip));
+
+    if(rc != 0)
+    {
+        ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : _local_addr.set error!")
+                   , __PRETTY_FUNCTION__));
+        return -1;
+    }
     _msg_block_recv = new ACE_Message_Block(MAX_RECV_SIZE);
     return 0;
 }
