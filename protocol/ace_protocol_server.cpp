@@ -71,9 +71,10 @@ int ACE_Protocol_Server::handle_input(ACE_HANDLE fd)
 
     ACE_Time_Value time_out(_time_out);
 
-    ssize_t rc = peer().recv( _msg_block_recv->rd_ptr()
-                                , _msg_block_recv->size()
-                                , &time_out );
+    char *ptr = _msg_block_recv->rd_ptr();
+    int size = _msg_block_recv->size();
+
+    ssize_t rc = peer().recv( ptr, size, &time_out );
 
     if ( rc <= 0 )
     {
@@ -93,7 +94,8 @@ int ACE_Protocol_Server::handle_input(ACE_HANDLE fd)
         return -1;
     }
 
-    rc = handle_recv_message( _msg_block_recv->rd_ptr(), rc );
+    ptr[rc] = '\0';
+    rc = handle_recv_message( ptr, rc );
 
     return rc;
 
