@@ -86,10 +86,14 @@ int Cmd_Down_From_DB::handle_timeout (const ACE_Time_Value &tv,
                 ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : rc = %d send error\n")
                            , __PRETTY_FUNCTION__
                            , rc));
-
+                iter->flag = 4;
+            }
+            else
+            {
+                iter->flag = 3;
             }
             //ACE_DEBUG((LM_INFO, ACE_TEXT("33333333333333333:%s\n"),msg_block->rd_ptr()));
-            iter->flag = 1;
+
             _db_sql->do_db_update_table("tra_download", *iter);
         }
         else
@@ -103,10 +107,14 @@ int Cmd_Down_From_DB::handle_timeout (const ACE_Time_Value &tv,
                 ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : rc = %d send error\n")
                            , __PRETTY_FUNCTION__
                            , rc));
-
+                iter->flag = 2;
+            }
+            else
+            {
+                iter->flag = 1;
             }
             //ACE_DEBUG((LM_INFO, ACE_TEXT("33333333333333333:%s\n"),msg_block->rd_ptr()));
-            iter->flag = 1;
+
             _db_sql->do_db_update_table("tra_download", *iter);
         }
     }

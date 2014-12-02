@@ -5,15 +5,18 @@ macx {
     QMAKE_MAC_SDK = macosx10.10
 }
 
+msg_parse.depands = object msg_handler
+
+main.depands = database_mysql
+
 SUBDIRS += \
     object \
     msg_parse \
     aio_handler \
     protocol \
     msg_handler \
-    main \
-    database_mysql
+    database_mysql \
+    main
 
-msg_parse.depands = object msg_handler
 
-main.depands = database_mysql
+
