@@ -16,7 +16,8 @@ SUBDIRS += \
     protocol \
     msg_handler \
     database_mysql \
-    main
+    main \
+    trailer_test
 
 
 
