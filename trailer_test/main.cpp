@@ -11,14 +11,13 @@
 #include <ace/Time_Value.h>
 
 #include <mysql/mysql.h>
-
-#include "cmd_down_from_db.h"
+#include "database_mysql/database_sql.h"
 
 #include "server_msg_handler.h"
-#include "protocol/ace_protocol_acceptor.h"
 #include "server_msg_handler_udp.h"
+#include "cmd_event_handler.h"
+#include "protocol/ace_protocol_acceptor.h"
 
-#include "database_mysql/database_sql.h"
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 {
@@ -34,6 +33,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
     unsigned int    tcp_listen_port     = 20000;
     unsigned int    socket_timeout      = 1;
+
+    unsigned int    cmd_listen_port     = 30000;
 
     unsigned int    is_daemon           = 0;
 
@@ -92,9 +93,11 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
             {
                 ACE_TString    tcp_listen_port_     = ACE_TEXT("20000");
                 ACE_TString    socket_timeout_      = ACE_TEXT("1");
+                ACE_TString    cmd_listen_port_     = ACE_TEXT("30000");
 
                 rc = ini.get_string_value(network_section, ACE_TEXT("tcp_listen_port"), tcp_listen_port_);
-                if (!rc) ini.get_string_value(network_section, ACE_TEXT("socket_timeout"), socket_timeout_);
+                if (rc == 0) ini.get_string_value(network_section, ACE_TEXT("socket_timeout"), socket_timeout_);
+                if (rc == 0) ini.get_string_value(network_section, ACE_TEXT("cmd_listen_port"), cmd_listen_port_);
                 if (rc != 0)
                 {
                     ACE_DEBUG((LM_INFO, ACE_TEXT("[network]: get_string_value error!\n")));
@@ -102,6 +105,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
                 }
                 tcp_listen_port = ACE_OS::atoi(tcp_listen_port_.c_str());
                 socket_timeout = ACE_OS::atoi(socket_timeout_.c_str());
+                cmd_listen_port = ACE_OS::atoi(cmd_listen_port_.c_str());
             }
 
             ACE_Configuration_Section_Key main_section;
@@ -241,17 +245,28 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
                 mysql_library_end(); return -1;
             }
 
-            Cmd_Down_From_DB *cmd_down_from_db = Cmd_Down_From_DB_Singleton::instance();
 
-            ACE_ASSERT(cmd_down_from_db != NULL);
+            //cmd_acceptor
+            ACE_Protocol_Acceptor<Cmd_Event_Handler> *cmd_acceptor =
+                    ACE_Protocol_Acceptor_Singleton<Cmd_Event_Handler>::instance();
 
-            ACE_Time_Value tv(db_polling_interval);
-            rc = cmd_down_from_db->open(tv);
+
+            rc = cmd_acceptor->init(socket_timeout);
             if(rc != 0)
             {
-                ACE_DEBUG((LM_ERROR, ACE_TEXT("cmd_down_from_db->open error!\n")));
+                ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : cmd_acceptpor init error!\n"), __PRETTY_FUNCTION__));
                 mysql_library_end(); return -1;
             }
+
+            ACE_INET_Addr cmd_addr(cmd_listen_port);
+            rc = acceptor->open(cmd_addr);
+            if(rc != 0)
+            {
+                ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : cmd_acceptpor open error!\n"), __PRETTY_FUNCTION__));
+                mysql_library_end(); return -1;
+            }
+
+            ACE_DEBUG((LM_INFO, ACE_TEXT("%s : acceptpor open success!\n"), __PRETTY_FUNCTION__));
 
 
             ACE_Reactor *reactor = ACE_Reactor::instance();
@@ -260,8 +275,6 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
             {
                 reactor->run_reactor_event_loop();
             }
-
-            cmd_down_from_db->close();
 
             reactor->close();
             mysql_library_end();

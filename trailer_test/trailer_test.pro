@@ -29,7 +29,6 @@ LIBS += -L../lib -lprotocol -lserver_msg_parse -lmsg_handler -ldatabase_mysql -l
 LIBS += -L/usr/lib/x86_64-linux-gnu -lmysqlclient -lpthread -lz -lm -ldl
 
 SOURCES += main.cpp \
-    cmd_down_from_db.cpp \
     server_msg_handler.cpp \
     server_msg_handler_udp.cpp \
     addr_handler_map.cpp \
@@ -39,7 +38,6 @@ include(deployment.pri)
 qtcAddDeployment()
 
 HEADERS += \
-    cmd_down_from_db.h \
     server_msg_handler.h \
     server_msg_handler_udp.h \
     addr_handler_map.h \
