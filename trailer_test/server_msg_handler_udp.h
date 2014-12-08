@@ -1,6 +1,7 @@
 #ifndef SERVER_MSG_HANDLER_UDP_H
 #define SERVER_MSG_HANDLER_UDP_H
 
+#include <string>
 #include <ace/INET_Addr.h>
 #include <ace/SOCK_Dgram.h>
 #include <ace/Event_Handler.h>
@@ -23,6 +24,7 @@ public:
     int send_message(ACE_INET_Addr const& remote_addr
                      , ACE_TCHAR const *msg
                      , int msg_len);
+
 private:
     ACE_INET_Addr _local_addr;
     ACE_SOCK_Dgram _sock_dgram;

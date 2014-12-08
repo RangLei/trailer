@@ -101,5 +101,18 @@ struct OBJECTSHARED_EXPORT TRA_Table_Data{
     int flag;
 };
 
+struct OBJECTSHARED_EXPORT TRA_TEST_Table_Data{
+    int primart_key;
+    std::string serinal_no;
+    std::string created_time;
+    std::string modify_time;
+    std::string ip;
+    std::string tra_upload_cmd;
+    std::string tra_download_cmd;
+    std::string gps_statu;
+    std::string power_statu;
+    std::string net_statu;
+};
+
 
 #endif // OBJECT_H

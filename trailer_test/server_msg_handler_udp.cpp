@@ -1,9 +1,12 @@
+#include <cstring>
+#include <sstream>
 #include <ace/Reactor.h>
 #include <ace/Log_Msg.h>
 
 #include "server_msg_handler_udp.h"
 
 #include "database_mysql/database_sql.h"
+#include "msg_define.h"
 
 #define MAX_RECV_SIZE (1024 * 1024)
 
@@ -87,21 +90,12 @@ int Server_Msg_Handler_UDP::handle_input(ACE_HANDLE fd)
         char *buf = _msg_block_recv->rd_ptr();
         int length = rc;
 
+        ACE_TCHAR addr_str [128];
+        remote_addr.addr_to_string(addr_str, sizeof(addr_str));
+
         buf[length] = '\0';
 
-        if (_db_sql)
-        {
-            TRA_Table_Data tra_table_data;
-            ACE_TCHAR addr_str [128];
-            remote_addr.addr_to_string(addr_str, sizeof(addr_str));
-            tra_table_data.ip = addr_str;
-            tra_table_data.content = buf;
-            tra_table_data.flag = 0;
-
-            _db_sql->do_db_insert_table("tra_upload", tra_table_data);
-        }
-
-        ACE_OS::fprintf(stdout, "%d--:%s\n", length, buf);
+        ACE_OS::fprintf(stdout, "---%d--:%s\n", length, buf);
 
         ACE_OS::fflush(stdout);
 
@@ -130,3 +124,5 @@ int Server_Msg_Handler_UDP::send_message(const ACE_INET_Addr& remote_addr
 
     return rc;
 }
+
+

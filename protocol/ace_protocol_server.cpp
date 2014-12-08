@@ -67,7 +67,7 @@ int ACE_Protocol_Server::close(u_long flags)
 
 int ACE_Protocol_Server::handle_input(ACE_HANDLE fd)
 {
-    //ACE_DEBUG ( ( LM_INFO, ACE_TEXT("into ACE_Protocol_Server::handle_input\n") ) );
+    ACE_DEBUG ( ( LM_INFO, ACE_TEXT("into ACE_Protocol_Server::handle_input\n") ) );
 
     ACE_Time_Value time_out(_time_out);
 

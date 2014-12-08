@@ -41,5 +41,6 @@ HEADERS += \
     server_msg_handler.h \
     server_msg_handler_udp.h \
     addr_handler_map.h \
-    cmd_event_handler.h
+    cmd_event_handler.h \
+    msg_define.h
 

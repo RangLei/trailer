@@ -25,7 +25,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     ACE_TString     db_host             = ACE_TEXT("localhost") ;
     ACE_TString     db_user             = ACE_TEXT("root") ;
     ACE_TString     db_password         = ACE_TEXT("123456") ;
-    ACE_TString     db_name             = ACE_TEXT("telitek") ;
+    ACE_TString     db_name             = ACE_TEXT("telitek_test") ;
     unsigned int    db_port             = 3306;
     unsigned int    is_create_db        = 0;
     unsigned int    is_create_table     = 0;
@@ -46,7 +46,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
         ini.open(512);
         ACE_Ini_ImpExp          ini_import(ini);
 
-        ACE_TCHAR               *ini_file = ACE_TEXT("trailer.ini");
+        ACE_TCHAR               *ini_file = ACE_TEXT("trailer_test.ini");
 
         int rc = ini_import.import_config(ini_file);
         if(rc != 0)
@@ -136,22 +136,22 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
     while(true)
     {
-        pid_t pid = ACE_OS::fork();
-        if(pid == -1)
-        {
-            ACE_DEBUG((LM_ERROR, ACE_TEXT("%s :fork failed!\n"), __PRETTY_FUNCTION__));
-            return -1;
-        }
+//        pid_t pid = ACE_OS::fork();
+//        if(pid == -1)
+//        {
+//            ACE_DEBUG((LM_ERROR, ACE_TEXT("%s :fork failed!\n"), __PRETTY_FUNCTION__));
+//            return -1;
+//        }
 
-        if(pid > 0)
-        {
-            int status;
-            ACE_OS::waitpid( pid, &status );
-            if(status == 0)//child return correctly
-                return 0;
-        }
-        else //child
-        {
+//        if(pid > 0)
+//        {
+//            int status;
+//            ACE_OS::waitpid( pid, &status );
+//            if(status == 0)//child return correctly
+//                return 0;
+//        }
+//        else //child
+//        {
             //todo: db
 #if 1
             int rc = mysql_library_init(0, NULL, NULL);
@@ -176,31 +176,22 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
             if(is_create_table)
             {
-                char *creat_tra_download_table = "CREATE TABLE IF NOT EXISTS `tra_download` ("
-                                                 "`id` int(11) NOT NULL AUTO_INCREMENT,"
-                                                 "`created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
-                                                 "`ip` varchar(16) COLLATE utf8_unicode_ci NOT NULL,"
-                                                 "`content` varchar(255) COLLATE utf8_unicode_ci NOT NULL,"
-                                                 "`flag` tinyint(4) NOT NULL DEFAULT '0',"
-                                                 "PRIMARY KEY (`id`)"
-                                                 ") ENGINE=InnoDB DEFAULT CHARSET=utf8";
-                if (db_sql->do_db_real_query(creat_tra_download_table, strlen(creat_tra_download_table)))
+                char *creat_tra_test_box_table = "CREATE TABLE IF NOT EXISTS `tra_test_box`("
+                            "`id` INT AUTO_INCREMENT PRIMARY KEY,"
+                            "`serial_no` NVARCHAR(30) NOT NULL,"
+                            "`created` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,"
+                            "`modify` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',"
+                            "`ip` NVARCHAR(30) NOT NULL,"
+                            "`tra_upload_cmd` NVARCHAR(255) DEFAULT NULL,"
+                            "`tra_download_cmd` NVARCHAR(255) DEFAULT NULL,"
+                            "`gps_statu` NVARCHAR(10) NOT NULL DEFAULT 'NULL',"
+                            "`power_statu` NVARCHAR(10) NOT NULL DEFAULT 'NULL',"
+                            "`net_statu` NVARCHAR(10) NOT NULL DEFAULT 'NULL'"
+                            ")ENGINE=INNODB CHARACTER SET utf8 COLLATE utf8_general_ci AUTO_INCREMENT = 1";
+                if (db_sql->do_db_real_query(creat_tra_test_box_table,
+                                             strlen(creat_tra_test_box_table)))
                 {
-                    ACE_DEBUG((LM_ERROR, ACE_TEXT("%s :database creat tra_download table fail\n"), __PRETTY_FUNCTION__));
-                    mysql_library_end(); return -1;
-                }
-
-                char *creat_tra_upload_table = "CREATE TABLE IF NOT EXISTS `tra_upload` ("
-                                               "`id` int(11) NOT NULL AUTO_INCREMENT,"
-                                               "`created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,"
-                                               "`ip` varchar(16) COLLATE utf8_unicode_ci NOT NULL,"
-                                               "`content` varchar(255) COLLATE utf8_unicode_ci NOT NULL,"
-                                               "`flag` tinyint(4) NOT NULL DEFAULT '0',"
-                                               "PRIMARY KEY (`id`)"
-                                               ") ENGINE=InnoDB DEFAULT CHARSET=utf8";
-                if (db_sql->do_db_real_query(creat_tra_upload_table, strlen(creat_tra_upload_table)))
-                {
-                    ACE_DEBUG((LM_ERROR, ACE_TEXT("%s :database creat tra_upload table fail\n"), __PRETTY_FUNCTION__));
+                    ACE_DEBUG((LM_ERROR, ACE_TEXT("%s :database creat tra_test_box table fail\n"), __PRETTY_FUNCTION__));
                     mysql_library_end(); return -1;
                 }
             }
@@ -208,9 +199,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 #endif
 
             //AIO_Acceptor
-            ACE_Protocol_Acceptor<Server_MSG_Handler> *acceptor =
+            ACE_Protocol_Acceptor<Server_MSG_Handler>* acceptor =
                     ACE_Protocol_Acceptor_Singleton<Server_MSG_Handler>::instance();
-
 
             rc = acceptor->init(socket_timeout);
             if(rc != 0)
@@ -223,11 +213,11 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
             rc = acceptor->open(local_addr);
             if(rc != 0)
             {
-                ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : acceptpor open error!\n"), __PRETTY_FUNCTION__));
+                ACE_DEBUG((LM_ERROR, ACE_TEXT("%s :box tcp acceptpor open error!\n"), __PRETTY_FUNCTION__));
                 mysql_library_end(); return -1;
             }
 
-            ACE_DEBUG((LM_INFO, ACE_TEXT("%s : acceptpor open success!\n"), __PRETTY_FUNCTION__));
+            ACE_DEBUG((LM_INFO, ACE_TEXT("%s :box tcp acceptpor open success!\n"), __PRETTY_FUNCTION__));
 
             //open udp_handler
             Server_Msg_Handler_UDP *server_msg_handler_udp = Server_Msg_Handler_UDP_Singleton::instance();
@@ -244,12 +234,12 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
                 ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : server_msg_handler_udp open error!\n"), __PRETTY_FUNCTION__));
                 mysql_library_end(); return -1;
             }
+            ACE_DEBUG((LM_INFO, ACE_TEXT("%s :server_msg_handler_udp open success!\n"), __PRETTY_FUNCTION__));
 
 
-            //cmd_acceptor
-            ACE_Protocol_Acceptor<Cmd_Event_Handler> *cmd_acceptor =
+//            //cmd_acceptor
+            ACE_Protocol_Acceptor<Cmd_Event_Handler>* cmd_acceptor =
                     ACE_Protocol_Acceptor_Singleton<Cmd_Event_Handler>::instance();
-
 
             rc = cmd_acceptor->init(socket_timeout);
             if(rc != 0)
@@ -259,14 +249,14 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
             }
 
             ACE_INET_Addr cmd_addr(cmd_listen_port);
-            rc = acceptor->open(cmd_addr);
+            rc = cmd_acceptor->open(cmd_addr);
             if(rc != 0)
             {
                 ACE_DEBUG((LM_ERROR, ACE_TEXT("%s : cmd_acceptpor open error!\n"), __PRETTY_FUNCTION__));
                 mysql_library_end(); return -1;
             }
 
-            ACE_DEBUG((LM_INFO, ACE_TEXT("%s : acceptpor open success!\n"), __PRETTY_FUNCTION__));
+            ACE_DEBUG((LM_INFO, ACE_TEXT("%s :web cmd acceptpor open success!\n"), __PRETTY_FUNCTION__));
 
 
             ACE_Reactor *reactor = ACE_Reactor::instance();
@@ -281,6 +271,6 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
             return 0;
         }
-    }
+//    }
 }
 

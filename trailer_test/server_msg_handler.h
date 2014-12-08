@@ -7,6 +7,7 @@ class Database_SQL;
 class Server_Msg_Handler_UDP;
 class Server_MSG_Handler : public ACE_Protocol_Server
 {
+    typedef void (Server_MSG_Handler::*HANDLER) (const char* buf, const int& length);
     typedef ACE_Protocol_Server Super;
 public:
     Server_MSG_Handler();
@@ -16,8 +17,11 @@ public:
 
     virtual int handle_recv_message(const char* buf, int length);
     virtual int handle_send_message(const char* buf, int length);
+private:
+    void handle_gps(const char* buf, const int& length);
 
 private:
+    HANDLER _handle;
     Database_SQL *_db_sql;
     Server_Msg_Handler_UDP *_server_msg_handler_udp;
     ACE_INET_Addr _remote_addr;
